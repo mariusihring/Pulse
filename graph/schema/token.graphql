@@ -1,0 +1,35 @@
+type Token {
+  id: UUID!
+  createdAt: Time!
+  updatedAt: Time!
+  name: String!
+  currentUsdValue: Decimal!
+  lastUpdated: Time!
+  historicalPrices: [HistoricalPrice!]!
+}
+
+type SubwalletToken {
+  id: UUID!
+  createdAt: Time!
+  updatedAt: Time!
+  token: Token!
+  amount: Decimal!
+  valueUsd: Decimal!
+  totalPnl: Decimal!
+  snapshot: [TokenSnapshot!]!
+}
+
+type HistoricalPrice {
+  id: UUID!
+  createdAt: Time!
+  token: Token!
+  date: Time!
+  price: Decimal!
+}
+
+extend type Query {
+  tokens: [Token!]! @auth
+  token(id: UUID!): Token! @auth
+  tokenPriceHistory(id: UUID!, from: Time!, to: Time!): [HistoricalPrice!]!
+    @auth
+}

@@ -1,0 +1,21 @@
+type User {
+  id: UUID!
+  createdAt: Time!
+  updatedAt: Time!
+  name: String!
+  email: String!
+  wallets: [Wallet!]!
+  alerts: [Alert!]!
+  roles: [Role!]!
+  metrics: [PortfolioMetric!]!
+}
+
+input CreateUserInput {
+  name: String!
+  email: String!
+  password: String!
+}
+
+type Query {
+  me: User! @auth
+}

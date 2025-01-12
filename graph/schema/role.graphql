@@ -1,0 +1,20 @@
+type Role {
+  id: UUID!
+  createdAt: Time!
+  updatedAt: Time!
+  name: String!
+  users: [User!]!
+}
+
+extend type Query {
+  roles: [Role!]! @auth @hasRole(role: "ADMIN")
+}
+
+extend type Mutation {
+  assignRole(userId: UUID!, roleName: String!): User!
+    @auth
+    @hasRole(role: "ADMIN")
+  removeRole(userId: UUID!, roleName: String!): User!
+    @auth
+    @hasRole(role: "ADMIN")
+}

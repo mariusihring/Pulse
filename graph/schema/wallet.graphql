@@ -1,0 +1,38 @@
+type Wallet {
+  id: UUID!
+  createdAt: Time!
+  updatedAt: Time!
+  name: String!
+  subwallets: [Subwallet!]!
+}
+
+type Subwallet {
+  id: UUID!
+  createdAt: Time!
+  updatedAt: Time!
+  name: String!
+  chain: Chain!
+  tokens: [SubwalletToken!]!
+  snapshots: [Snapshot!]!
+}
+
+input createWalletInput {
+  name: String!
+}
+
+input createSubwalletInput {
+  name: String!
+  walletId: UUID!
+  chainId: UUID!
+}
+
+extend type Query {
+  wallets: [Wallet!]! @auth
+  wallet(id: UUID!): Wallet! @auth
+  subwallet(id: UUID!): Subwallet! @auth
+}
+
+extend type Mutation {
+  createWallet(input: createWalletInput!): Wallet! @auth
+  createSubwallet(input: createSubwalletInput!): Subwallet! @auth
+}

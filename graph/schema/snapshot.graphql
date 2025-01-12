@@ -1,0 +1,14 @@
+type Snapshot {
+  id: UUID!
+  createdAt: Time!
+  subwallet: Subwallet!
+  snapshotDate: Time!
+  totalPnl: Decimal!
+  totalValue: Decimal!
+}
+
+type TokenSnapshot {
+  id: UUID!
+  createdAt: Time!
+  valueUsd: Decimal!
+}
