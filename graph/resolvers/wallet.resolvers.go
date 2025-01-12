@@ -7,32 +7,37 @@ package resolvers
 import (
 	"context"
 	"fmt"
-	graphql_model1 "pulse/graph/graphql_model"
-
 	"github.com/google/uuid"
+	"pulse/graph/graphql_model"
+	"pulse/internal/auth"
 )
 
 // CreateWallet is the resolver for the createWallet field.
-func (r *mutationResolver) CreateWallet(ctx context.Context, input graphql_model1.CreateWalletInput) (*graphql_model1.Wallet, error) {
-	panic(fmt.Errorf("not implemented: CreateWallet - createWallet"))
+func (r *mutationResolver) CreateWallet(ctx context.Context, input graphql_model.CreateWalletInput) (*graphql_model.Wallet, error) {
+	userId := auth.UserFromContext(ctx)
+	fmt.Printf(" resolver user: %s", userId)
+	return r.WalletService.CreateWallet(ctx, &input)
 }
 
 // CreateSubwallet is the resolver for the createSubwallet field.
-func (r *mutationResolver) CreateSubwallet(ctx context.Context, input graphql_model1.CreateSubwalletInput) (*graphql_model1.Subwallet, error) {
-	panic(fmt.Errorf("not implemented: CreateSubwallet - createSubwallet"))
+func (r *mutationResolver) CreateSubwallet(ctx context.Context, input graphql_model.CreateSubwalletInput) (*graphql_model.Subwallet, error) {
+
+	return r.WalletService.CreateSubwallet(ctx, &input)
 }
 
 // Wallets is the resolver for the wallets field.
-func (r *queryResolver) Wallets(ctx context.Context) ([]*graphql_model1.Wallet, error) {
-	panic(fmt.Errorf("not implemented: Wallets - wallets"))
+func (r *queryResolver) Wallets(ctx context.Context) ([]*graphql_model.Wallet, error) {
+	return r.WalletService.GetWallets(ctx)
 }
 
 // Wallet is the resolver for the wallet field.
-func (r *queryResolver) Wallet(ctx context.Context, id uuid.UUID) (*graphql_model1.Wallet, error) {
-	panic(fmt.Errorf("not implemented: Wallet - wallet"))
+func (r *queryResolver) Wallet(ctx context.Context, id uuid.UUID) (*graphql_model.Wallet, error) {
+
+	return r.WalletService.GetWallet(ctx, id)
 }
 
 // Subwallet is the resolver for the subwallet field.
-func (r *queryResolver) Subwallet(ctx context.Context, id uuid.UUID) (*graphql_model1.Subwallet, error) {
-	panic(fmt.Errorf("not implemented: Subwallet - subwallet"))
+func (r *queryResolver) Subwallet(ctx context.Context, id uuid.UUID) (*graphql_model.Subwallet, error) {
+
+	return r.WalletService.GetSubwallet(ctx, id)
 }

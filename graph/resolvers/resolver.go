@@ -7,5 +7,6 @@ import "pulse/internal/services"
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	AuthService *services.AuthService
+	AuthService   *services.AuthService
+	WalletService *services.WalletService
 }

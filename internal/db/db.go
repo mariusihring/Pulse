@@ -65,13 +65,14 @@ func InitDB(cfg *config.Config) *gorm.DB {
 	sqlDB.SetMaxOpenConns(100)          // Maximum number of open connections
 	sqlDB.SetConnMaxLifetime(time.Hour) // Maximum lifetime of a connection
 
-	// Enable UUID extension
-	// db.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"")
 	db.Exec("DEALLOCATE ALL")
 	// Run migrations
-	if err := autoMigrate(db); err != nil {
-		charm_log.Fatalf("failed to run migrations: %v", err)
-	}
+	//if err := autoMigrate(db); err != nil {
+	//	charm_log.Fatalf("failed to run migrations: %v", err)
+	//}
+	//if err := seedRoles(db); err != nil {
+	//	charm_log.Fatalf("failed to run seeding roles: %v", err)
+	//}
 	charm_log.Info("Database connection established & Migrations run")
 
 	return db
@@ -94,4 +95,19 @@ func autoMigrate(db *gorm.DB) error {
 		&models.Alert{},           // depends on User and Token
 		&models.PortfolioMetric{}, // depends on User
 	)
+}
+
+func seedRoles(db *gorm.DB) error {
+	roles := []models.Role{
+		{Name: "USER"},
+		{Name: "ADMIN"},
+	}
+
+	for _, role := range roles {
+		if err := db.Where("name = ?", role.Name).FirstOrCreate(&role).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

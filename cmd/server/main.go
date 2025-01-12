@@ -6,6 +6,7 @@ import (
 	"pulse/graph/generated"
 	"pulse/graph/resolvers"
 	"pulse/internal/auth"
+	pulse_middleware "pulse/internal/auth/middleware"
 	"pulse/internal/config"
 	"pulse/internal/db"
 	"pulse/internal/services"
@@ -39,7 +40,11 @@ func main() {
 
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{
 		Resolvers: &resolvers.Resolver{
-			AuthService: services.NewAuthService(database, jwtAuth),
+			AuthService:   services.NewAuthService(database, jwtAuth),
+			WalletService: services.NewWalletService(database),
+		},
+		Directives: generated.DirectiveRoot{
+			Auth: pulse_middleware.AuthDirective,
 		},
 	}))
 
@@ -49,7 +54,7 @@ func main() {
 	srv.Use(extension.Introspection{})
 
 	router.Handle("/", playground.Handler("Pulse", "/query"))
-	router.Handle("/query", srv)
+	router.Handle("/query", pulse_middleware.Auth(jwtAuth)(srv))
 
 	router.Options("/*", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
