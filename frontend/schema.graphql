@@ -1,0 +1,225 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+directive @auth on FIELD_DEFINITION
+
+"""
+The @defer directive may be specified on a fragment spread to imply de-prioritization, that causes the fragment to be omitted in the initial response, and delivered as a subsequent response afterward. A query with @defer directive will cause the request to potentially return multiple responses, where non-deferred data is delivered in the initial response and data deferred delivered in a subsequent response. @include and @skip take precedence over @defer.
+"""
+directive @defer(if: Boolean = true, label: String) on FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+directive @hasRole(role: String!) on FIELD_DEFINITION
+
+type Alert {
+  condition: String!
+  createdAt: Time!
+  id: UUID!
+  notificationSettings: String
+  token: Token!
+  updatedAt: Time!
+  user: User!
+}
+
+type AuthResponse {
+  token: String!
+  user: User!
+}
+
+type Chain {
+  createdAt: Time!
+  id: UUID!
+  name: String!
+  subwallets: [Subwallet!]!
+  updatedAt: Time!
+}
+
+input CreateAlertInput {
+  condition: String!
+  notificationSettings: String
+  tokenId: UUID!
+}
+
+input CreateUserInput {
+  email: String!
+  name: String!
+  password: String!
+}
+
+scalar Decimal
+
+type HistoricalPrice {
+  createdAt: Time!
+  date: Time!
+  id: UUID!
+  price: Decimal!
+  token: Token!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  assignRole(roleName: String!, userId: UUID!): User!
+  createAlert(input: CreateAlertInput!): Alert!
+  createSubwallet(input: createSubwalletInput!): Subwallet!
+  createWallet(input: createWalletInput!): Wallet!
+  deleteAlert(id: UUID!): Boolean!
+  login(input: LoginInput!): AuthResponse!
+  register(input: RegisterInput!): AuthResponse!
+  removeRole(roleName: String!, userId: UUID!): User!
+}
+
+type PortfolioMetric {
+  calculatedAt: Time!
+  createdAt: Time!
+  id: UUID!
+  metricName: String!
+  metricValue: Decimal!
+  user: User!
+}
+
+type PortfolioStats {
+  dailyChange: Decimal!
+  topPerformers: [SubwalletToken!]!
+  totalPnl: Decimal!
+  totalValue: Decimal!
+  worstPerformers: [SubwalletToken!]!
+}
+
+type Query {
+  alerts: [Alert!]!
+  chain(id: UUID!): Chain!
+  chains: [Chain!]!
+  me: User!
+  portfolioMetrics(from: Time!, to: Time!): [PortfolioMetric!]!
+  portfolioStats: PortfolioStats!
+  roles: [Role!]!
+  subwallet(id: UUID!): Subwallet!
+  token(id: UUID!): Token!
+  tokenPriceHistory(from: Time!, id: UUID!, to: Time!): [HistoricalPrice!]!
+  tokens: [Token!]!
+  transactionCategories: [TransactionCategory!]!
+  transactions: [Transaction!]!
+  wallet(id: UUID!): Wallet!
+  wallets: [Wallet!]!
+}
+
+input RegisterInput {
+  email: String!
+  name: String!
+  password: String!
+}
+
+type Role {
+  createdAt: Time!
+  id: UUID!
+  name: String!
+  updatedAt: Time!
+  users: [User!]!
+}
+
+type Snapshot {
+  createdAt: Time!
+  id: UUID!
+  snapshotDate: Time!
+  subwallet: Subwallet!
+  totalPnl: Decimal!
+  totalValue: Decimal!
+}
+
+type Subwallet {
+  address: String!
+  chain: Chain!
+  createdAt: Time!
+  id: UUID!
+  name: String!
+  snapshots: [Snapshot!]!
+  tokens: [SubwalletToken!]!
+  updatedAt: Time!
+}
+
+type SubwalletToken {
+  amount: Decimal!
+  createdAt: Time!
+  id: UUID!
+  snapshot: [TokenSnapshot!]!
+  token: Token!
+  totalPnl: Decimal!
+  updatedAt: Time!
+  valueUsd: Decimal!
+}
+
+scalar Time
+
+type Token {
+  createdAt: Time!
+  currentUsdValue: Decimal!
+  historicalPrices: [HistoricalPrice!]!
+  id: UUID!
+  lastUpdated: Time!
+  name: String!
+  updatedAt: Time!
+}
+
+type TokenSnapshot {
+  createdAt: Time!
+  id: UUID!
+  valueUsd: Decimal!
+}
+
+type Transaction {
+  amount: Decimal!
+  category: TransactionCategory!
+  createdAt: Time!
+  id: UUID!
+  token: Token!
+  transactionDate: Time!
+  transactionType: String!
+  updatedAt: Time!
+  valueUsdAtTransaction: Decimal!
+}
+
+type TransactionCategory {
+  createdAt: Time!
+  id: UUID!
+  name: String!
+  transactions: [Transaction!]!
+  updatedAt: Time!
+}
+
+scalar UUID
+
+type User {
+  alerts: [Alert!]!
+  createdAt: Time!
+  email: String!
+  id: UUID!
+  metrics: [PortfolioMetric!]!
+  name: String!
+  roles: [Role!]!
+  updatedAt: Time!
+  wallets: [Wallet!]!
+}
+
+type Wallet {
+  createdAt: Time!
+  id: UUID!
+  name: String!
+  subwallets: [Subwallet!]!
+  updatedAt: Time!
+}
+
+input createSubwalletInput {
+  address: String!
+  chainId: UUID!
+  name: String!
+  walletId: UUID!
+}
+
+input createWalletInput {
+  name: String!
+}

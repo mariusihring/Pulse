@@ -17,6 +17,12 @@ const config: CodegenConfig = {
         onlyOperationTypes: false,
       },
     },
+    "./schema.graphql": {
+      plugins: ["schema-ast"],
+      config: {
+        includeDirectives: true,
+      },
+    },
     // Add a new output specifically for base types
     "./src/graphql/types.ts": {
       plugins: ["typescript"],
