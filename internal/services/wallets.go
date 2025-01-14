@@ -3,19 +3,27 @@ package services
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"pulse/graph/graphql_model"
 	"pulse/internal/auth"
 	"pulse/internal/db/models"
+	"pulse/internal/services/loaders"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type WalletService struct {
-	db *gorm.DB
+	db      *gorm.DB
+	loaders *Loaders
 }
 
-func NewWalletService(db *gorm.DB) *WalletService {
-	return &WalletService{db: db}
+type Loaders struct {
+	Solana *loaders.SolanaLoader
+}
+
+func NewWalletService(db *gorm.DB, solanaLoader *loaders.SolanaLoader) *WalletService {
+	loaders := Loaders{Solana: solanaLoader}
+	return &WalletService{db: db, loaders: &loaders}
 }
 
 func toGQLWallet(w *models.Wallet) *graphql_model.Wallet {
@@ -84,7 +92,6 @@ func (s *WalletService) CreateWallet(ctx context.Context, input *graphql_model.C
 }
 
 func (s *WalletService) GetWallet(ctx context.Context, id uuid.UUID) (*graphql_model.Wallet, error) {
-
 	var wallet models.Wallet
 	if err := s.db.Preload("Subwallets").Preload("Subwallets.Chain").First(&wallet, "id = ?", id).Error; err != nil {
 		return nil, fmt.Errorf("failed to get wallet: %w", err)
@@ -107,7 +114,6 @@ func (s *WalletService) GetWallets(ctx context.Context) ([]*graphql_model.Wallet
 }
 
 func (s *WalletService) CreateSubwallet(ctx context.Context, input *graphql_model.CreateSubwalletInput) (*graphql_model.Subwallet, error) {
-
 	// Verify wallet exists
 	var wallet models.Wallet
 	if err := s.db.First(&wallet, "id = ?", input.WalletID).Error; err != nil {
@@ -126,6 +132,10 @@ func (s *WalletService) CreateSubwallet(ctx context.Context, input *graphql_mode
 		ChainID:  input.ChainID,
 	}
 
+	// TODO: fetch WalletInfo via the corresponding loader service.
+	if chain.Name == "Solana" {
+	}
+
 	if err := s.db.Create(subwallet).Error; err != nil {
 		return nil, fmt.Errorf("failed to create subwallet: %w", err)
 	}
@@ -139,7 +149,6 @@ func (s *WalletService) CreateSubwallet(ctx context.Context, input *graphql_mode
 }
 
 func (s *WalletService) GetSubwallet(ctx context.Context, id uuid.UUID) (*graphql_model.Subwallet, error) {
-
 	var subwallet models.Subwallet
 	if err := s.db.Preload("Chain").First(&subwallet, "id = ?", id).Error; err != nil {
 		return nil, fmt.Errorf("failed to get subwallet: %w", err)

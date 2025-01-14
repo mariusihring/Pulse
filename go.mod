@@ -14,11 +14,9 @@ require (
 	golang.org/x/crypto v0.32.0
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.25.12
-	honnef.co/go/tools v0.5.1
 )
 
 require (
-	github.com/BurntSushi/toml v1.4.1-0.20240526193622-a339e1f7089c // indirect
 	github.com/agnivade/levenshtein v1.2.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/lipgloss v0.10.0 // indirect

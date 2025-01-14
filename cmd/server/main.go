@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"os"
 	"pulse/graph/generated"
 	"pulse/graph/resolvers"
 	"pulse/internal/auth"
@@ -10,6 +9,7 @@ import (
 	"pulse/internal/config"
 	"pulse/internal/db"
 	"pulse/internal/services"
+	"pulse/internal/services/loaders"
 
 	"github.com/charmbracelet/log"
 
@@ -38,10 +38,17 @@ func main() {
 	router.Use(middleware.SetHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS"))
 	router.Use(middleware.SetHeader("Access-Control-Allow-Headers", "Content-Type"))
 
+	// Create Loaders
+	solana_loader := loaders.NewSolanaLoader(cfg)
+
+	// Create Services
+
+	wallet_service := services.NewWalletService(database, solana_loader)
+
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{
 		Resolvers: &resolvers.Resolver{
 			AuthService:   services.NewAuthService(database, jwtAuth),
-			WalletService: services.NewWalletService(database),
+			WalletService: wallet_service,
 		},
 		Directives: generated.DirectiveRoot{
 			Auth: pulse_middleware.AuthDirective,
@@ -56,15 +63,12 @@ func main() {
 	router.Handle("/", playground.Handler("Pulse", "/query"))
 	router.Handle("/query", pulse_middleware.Auth(jwtAuth)(srv))
 
-	router.Options("/*", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
+	/*
+		router.Options("/*", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		})
+	*/
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
-	}
-
-	log.Infof("Connect to http://localhost:%s/ for Graphql Playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	log.Infof("Connect to http://localhost:%s/ for Graphql Playground", cfg.Server.Port)
+	log.Fatal(http.ListenAndServe(cfg.Server.Host+cfg.Server.Port, router))
 }
