@@ -67,12 +67,12 @@ func InitDB(cfg *config.Config) *gorm.DB {
 
 	db.Exec("DEALLOCATE ALL")
 	// Run migrations
-	//if err := autoMigrate(db); err != nil {
-	//	charm_log.Fatalf("failed to run migrations: %v", err)
-	//}
-	//if err := seedRoles(db); err != nil {
-	//	charm_log.Fatalf("failed to run seeding roles: %v", err)
-	//}
+	if err := autoMigrate(db); err != nil {
+		charm_log.Fatalf("failed to run migrations: %v", err)
+	}
+	if err := seedRoles(db); err != nil {
+		charm_log.Fatalf("failed to run seeding roles: %v", err)
+	}
 	charm_log.Info("Database connection established & Migrations run")
 
 	return db

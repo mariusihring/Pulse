@@ -67,6 +67,7 @@ func toGQLSubwallet(s *models.Subwallet) *graphql_model.Subwallet {
 		CreatedAt: s.CreatedAt,
 		UpdatedAt: s.UpdatedAt,
 		Name:      s.Name,
+		Address:   s.Address,
 		Chain:     chain,
 	}
 }
@@ -128,13 +129,17 @@ func (s *WalletService) CreateSubwallet(ctx context.Context, input *graphql_mode
 
 	subwallet := &models.Subwallet{
 		Name:     input.Name,
+		Address:  input.Address,
 		WalletID: input.WalletID,
 		ChainID:  input.ChainID,
 	}
 
 	// TODO: fetch WalletInfo via the corresponding loader service.
-	if chain.Name == "Solana" {
+	tokens, err := s.loaders.Solana.LoadWallet(input.Address)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load wallet: %w", err)
 	}
+	fmt.Println(tokens)
 
 	if err := s.db.Create(subwallet).Error; err != nil {
 		return nil, fmt.Errorf("failed to create subwallet: %w", err)

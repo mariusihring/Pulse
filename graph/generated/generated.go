@@ -145,6 +145,7 @@ type ComplexityRoot struct {
 	}
 
 	Subwallet struct {
+		Address   func(childComplexity int) int
 		Chain     func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
@@ -786,6 +787,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Snapshot.TotalValue(childComplexity), true
+
+	case "Subwallet.address":
+		if e.complexity.Subwallet.Address == nil {
+			break
+		}
+
+		return e.complexity.Subwallet.Address(childComplexity), true
 
 	case "Subwallet.chain":
 		if e.complexity.Subwallet.Chain == nil {
@@ -1492,6 +1500,7 @@ type Subwallet {
   chain: Chain!
   tokens: [SubwalletToken!]!
   snapshots: [Snapshot!]!
+  address: String!
 }
 
 input createWalletInput {
@@ -1502,6 +1511,7 @@ input createSubwalletInput {
   name: String!
   walletId: UUID!
   chainId: UUID!
+  address: String!
 }
 
 extend type Query {
@@ -2827,6 +2837,8 @@ func (ec *executionContext) fieldContext_Chain_subwallets(_ context.Context, fie
 				return ec.fieldContext_Subwallet_tokens(ctx, field)
 			case "snapshots":
 				return ec.fieldContext_Subwallet_snapshots(ctx, field)
+			case "address":
+				return ec.fieldContext_Subwallet_address(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Subwallet", field.Name)
 		},
@@ -3744,6 +3756,8 @@ func (ec *executionContext) fieldContext_Mutation_createSubwallet(ctx context.Co
 				return ec.fieldContext_Subwallet_tokens(ctx, field)
 			case "snapshots":
 				return ec.fieldContext_Subwallet_snapshots(ctx, field)
+			case "address":
+				return ec.fieldContext_Subwallet_address(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Subwallet", field.Name)
 		},
@@ -5566,6 +5580,8 @@ func (ec *executionContext) fieldContext_Query_subwallet(ctx context.Context, fi
 				return ec.fieldContext_Subwallet_tokens(ctx, field)
 			case "snapshots":
 				return ec.fieldContext_Subwallet_snapshots(ctx, field)
+			case "address":
+				return ec.fieldContext_Subwallet_address(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Subwallet", field.Name)
 		},
@@ -6094,6 +6110,8 @@ func (ec *executionContext) fieldContext_Snapshot_subwallet(_ context.Context, f
 				return ec.fieldContext_Subwallet_tokens(ctx, field)
 			case "snapshots":
 				return ec.fieldContext_Subwallet_snapshots(ctx, field)
+			case "address":
+				return ec.fieldContext_Subwallet_address(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Subwallet", field.Name)
 		},
@@ -6580,6 +6598,50 @@ func (ec *executionContext) fieldContext_Subwallet_snapshots(_ context.Context, 
 				return ec.fieldContext_Snapshot_totalValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Snapshot", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subwallet_address(ctx context.Context, field graphql.CollectedField, obj *graphql_model.Subwallet) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subwallet_address(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Address, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Subwallet_address(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subwallet",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -8756,6 +8818,8 @@ func (ec *executionContext) fieldContext_Wallet_subwallets(_ context.Context, fi
 				return ec.fieldContext_Subwallet_tokens(ctx, field)
 			case "snapshots":
 				return ec.fieldContext_Subwallet_snapshots(ctx, field)
+			case "address":
+				return ec.fieldContext_Subwallet_address(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Subwallet", field.Name)
 		},
@@ -10700,7 +10764,7 @@ func (ec *executionContext) unmarshalInputcreateSubwalletInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "walletId", "chainId"}
+	fieldsInOrder := [...]string{"name", "walletId", "chainId", "address"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10728,6 +10792,13 @@ func (ec *executionContext) unmarshalInputcreateSubwalletInput(ctx context.Conte
 				return it, err
 			}
 			it.ChainID = data
+		case "address":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Address = data
 		}
 	}
 
@@ -11764,6 +11835,11 @@ func (ec *executionContext) _Subwallet(ctx context.Context, sel ast.SelectionSet
 			}
 		case "snapshots":
 			out.Values[i] = ec._Subwallet_snapshots(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "address":
+			out.Values[i] = ec._Subwallet_address(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

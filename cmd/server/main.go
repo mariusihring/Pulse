@@ -70,5 +70,5 @@ func main() {
 	*/
 
 	log.Infof("Connect to http://localhost:%s/ for Graphql Playground", cfg.Server.Port)
-	log.Fatal(http.ListenAndServe(cfg.Server.Host+cfg.Server.Port, router))
+	log.Fatal(http.ListenAndServe(cfg.Server.Host+":"+cfg.Server.Port, router))
 }

@@ -18,4 +18,5 @@ type Subwallet struct {
 	Chain     Chain      `gorm:"foreignKey:ChainID"`
 	Tokens    []SubwalletToken
 	Snapshots []Snapshot
+	Address   string
 }

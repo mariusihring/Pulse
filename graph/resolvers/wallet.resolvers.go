@@ -7,9 +7,10 @@ package resolvers
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	"pulse/graph/graphql_model"
 	"pulse/internal/auth"
+
+	"github.com/google/uuid"
 )
 
 // CreateWallet is the resolver for the createWallet field.
@@ -21,7 +22,6 @@ func (r *mutationResolver) CreateWallet(ctx context.Context, input graphql_model
 
 // CreateSubwallet is the resolver for the createSubwallet field.
 func (r *mutationResolver) CreateSubwallet(ctx context.Context, input graphql_model.CreateSubwalletInput) (*graphql_model.Subwallet, error) {
-
 	return r.WalletService.CreateSubwallet(ctx, &input)
 }
 
@@ -32,12 +32,10 @@ func (r *queryResolver) Wallets(ctx context.Context) ([]*graphql_model.Wallet, e
 
 // Wallet is the resolver for the wallet field.
 func (r *queryResolver) Wallet(ctx context.Context, id uuid.UUID) (*graphql_model.Wallet, error) {
-
 	return r.WalletService.GetWallet(ctx, id)
 }
 
 // Subwallet is the resolver for the subwallet field.
 func (r *queryResolver) Subwallet(ctx context.Context, id uuid.UUID) (*graphql_model.Subwallet, error) {
-
 	return r.WalletService.GetSubwallet(ctx, id)
 }

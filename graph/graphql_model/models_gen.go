@@ -110,6 +110,7 @@ type Subwallet struct {
 	Chain     *Chain            `json:"chain"`
 	Tokens    []*SubwalletToken `json:"tokens"`
 	Snapshots []*Snapshot       `json:"snapshots"`
+	Address   string            `json:"address"`
 }
 
 type SubwalletToken struct {
@@ -183,6 +184,7 @@ type CreateSubwalletInput struct {
 	Name     string    `json:"name"`
 	WalletID uuid.UUID `json:"walletId"`
 	ChainID  uuid.UUID `json:"chainId"`
+	Address  string    `json:"address"`
 }
 
 type CreateWalletInput struct {
