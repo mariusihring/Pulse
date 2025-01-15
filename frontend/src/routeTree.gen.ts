@@ -20,6 +20,7 @@ import { Route as AuthenticatedSettingsIndexImport } from './routes/_authenticat
 import { Route as AuthenticatedWalletsSubwalletsImport } from './routes/_authenticated/wallets/subwallets'
 import { Route as AuthenticatedWalletsPerformanceImport } from './routes/_authenticated/wallets/performance'
 import { Route as AuthenticatedSettingsGeneralImport } from './routes/_authenticated/settings/general'
+import { Route as AuthenticatedWalletsWalletWalletIdImport } from './routes/_authenticated/wallets/wallet/$walletId'
 
 // Create/Update Routes
 
@@ -78,6 +79,13 @@ const AuthenticatedSettingsGeneralRoute =
   AuthenticatedSettingsGeneralImport.update({
     id: '/settings/general',
     path: '/settings/general',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+
+const AuthenticatedWalletsWalletWalletIdRoute =
+  AuthenticatedWalletsWalletWalletIdImport.update({
+    id: '/wallets/wallet/$walletId',
+    path: '/wallets/wallet/$walletId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 
@@ -148,6 +156,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWalletsIndexImport
       parentRoute: typeof AuthenticatedImport
     }
+    '/_authenticated/wallets/wallet/$walletId': {
+      id: '/_authenticated/wallets/wallet/$walletId'
+      path: '/wallets/wallet/$walletId'
+      fullPath: '/wallets/wallet/$walletId'
+      preLoaderRoute: typeof AuthenticatedWalletsWalletWalletIdImport
+      parentRoute: typeof AuthenticatedImport
+    }
   }
 }
 
@@ -161,6 +176,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedWalletsSubwalletsRoute: typeof AuthenticatedWalletsSubwalletsRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedWalletsIndexRoute: typeof AuthenticatedWalletsIndexRoute
+  AuthenticatedWalletsWalletWalletIdRoute: typeof AuthenticatedWalletsWalletWalletIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -171,6 +187,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedWalletsSubwalletsRoute: AuthenticatedWalletsSubwalletsRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   AuthenticatedWalletsIndexRoute: AuthenticatedWalletsIndexRoute,
+  AuthenticatedWalletsWalletWalletIdRoute:
+    AuthenticatedWalletsWalletWalletIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -187,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/wallets/subwallets': typeof AuthenticatedWalletsSubwalletsRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/wallets': typeof AuthenticatedWalletsIndexRoute
+  '/wallets/wallet/$walletId': typeof AuthenticatedWalletsWalletWalletIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -199,6 +218,7 @@ export interface FileRoutesByTo {
   '/wallets/subwallets': typeof AuthenticatedWalletsSubwalletsRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/wallets': typeof AuthenticatedWalletsIndexRoute
+  '/wallets/wallet/$walletId': typeof AuthenticatedWalletsWalletWalletIdRoute
 }
 
 export interface FileRoutesById {
@@ -212,6 +232,7 @@ export interface FileRoutesById {
   '/_authenticated/wallets/subwallets': typeof AuthenticatedWalletsSubwalletsRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/wallets/': typeof AuthenticatedWalletsIndexRoute
+  '/_authenticated/wallets/wallet/$walletId': typeof AuthenticatedWalletsWalletWalletIdRoute
 }
 
 export interface FileRouteTypes {
@@ -226,6 +247,7 @@ export interface FileRouteTypes {
     | '/wallets/subwallets'
     | '/settings'
     | '/wallets'
+    | '/wallets/wallet/$walletId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | ''
@@ -237,6 +259,7 @@ export interface FileRouteTypes {
     | '/wallets/subwallets'
     | '/settings'
     | '/wallets'
+    | '/wallets/wallet/$walletId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -248,6 +271,7 @@ export interface FileRouteTypes {
     | '/_authenticated/wallets/subwallets'
     | '/_authenticated/settings/'
     | '/_authenticated/wallets/'
+    | '/_authenticated/wallets/wallet/$walletId'
   fileRoutesById: FileRoutesById
 }
 
@@ -284,7 +308,8 @@ export const routeTree = rootRoute
         "/_authenticated/wallets/performance",
         "/_authenticated/wallets/subwallets",
         "/_authenticated/settings/",
-        "/_authenticated/wallets/"
+        "/_authenticated/wallets/",
+        "/_authenticated/wallets/wallet/$walletId"
       ]
     },
     "/login": {
@@ -316,6 +341,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/wallets/": {
       "filePath": "_authenticated/wallets/index.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/wallets/wallet/$walletId": {
+      "filePath": "_authenticated/wallets/wallet/$walletId.tsx",
       "parent": "/_authenticated"
     }
   }
