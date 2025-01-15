@@ -9,11 +9,30 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormEvent, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/contexts/auth_context";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const {signIn} = useAuth()
+  const [email, SetEmail] = useState(undefined)
+  const [pwd, SetPwd] = useState(undefined)
+  const navigate = useNavigate()
+
+  const handleLogin = async (e: FormEvent) => {
+    e.preventDefault()
+
+    try {
+      await signIn(email, pwd)
+      navigate({to: "/dashboard"})
+    } catch (error) {
+      console.error(error)
+    }
+    
+  }
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -57,7 +76,9 @@ export function LoginForm({
                   <Input
                     id="email"
                     type="email"
+                    value={email}
                     placeholder="m@example.com"
+                    onChange={(e) => SetEmail(e.target.value)}
                     required
                   />
                 </div>
@@ -71,9 +92,9 @@ export function LoginForm({
                       Forgot your password?
                     </a>
                   </div>
-                  <Input id="password" type="password" required />
+                  <Input id="password" type="password" required value={pwd} onChange={(e) => SetPwd(e.target.value)}/>
                 </div>
-                <Button type="submit" className="w-full">
+                <Button type="button" onClick={handleLogin} className="w-full">
                   Login
                 </Button>
               </div>

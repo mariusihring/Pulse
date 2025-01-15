@@ -24,19 +24,19 @@ const config: CodegenConfig = {
       },
     },
     // Add a new output specifically for base types
-    "./src/graphql/types.ts": {
-      plugins: ["typescript"],
-      config: {
-        // This ensures we get types for everything in the schema
-        enumsAsTypes: true,
-        skipTypename: false,
-        // Include scalars configuration if you have custom scalars
-        scalars: {
-          DateTime: "string",
-          // Add other custom scalars here
-        },
-      },
-    },
+    // "./src/graphql/types.ts": {
+    //   plugins: ["typescript"],
+    //   config: {
+    //     // This ensures we get types for everything in the schema
+    //     enumsAsTypes: true,
+    //     skipTypename: false,
+    //     // Include scalars configuration if you have custom scalars
+    //     scalars: {
+    //       DateTime: "string",
+    //       // Add other custom scalars here
+    //     },
+    //   },
+    // },
   },
 };
 
