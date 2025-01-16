@@ -9,9 +9,11 @@ import (
 )
 
 type Claims struct {
-	UserID uuid.UUID `json:"user_id"`
-	Roles  []string  `json:"roles"`
 	jwt.RegisteredClaims
+	UserID uuid.UUID `json:"sub"`             // Supabase uses 'sub' for user ID
+	Email  string    `json:"email"`           // Supabase email
+	Role   string    `json:"role"`            // Supabase role
+	Roles  []string  `json:"roles,omitempty"` // Your custom roles
 }
 
 type JWT struct {
@@ -21,36 +23,28 @@ type JWT struct {
 
 func New(cfg *config.Config) *JWT {
 	return &JWT{
-		secretKey: []byte(cfg.JWT.Secret),
+		secretKey: []byte(cfg.JWT.Secret), // This should be your Supabase JWT secret
 		duration:  cfg.JWT.Duration,
 	}
 }
 
-func (j *JWT) Generate(userID uuid.UUID, roles []string) (string, error) {
-	claims := Claims{
-		UserID: userID,
-		Roles:  roles,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.duration)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(j.secretKey)
-}
-
 func (j *JWT) Validate(tokenStr string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+	var claims Claims
+
+	token, err := jwt.ParseWithClaims(tokenStr, &claims, func(t *jwt.Token) (interface{}, error) {
 		return j.secretKey, nil
 	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
-		return claims, nil
+	if !token.Valid {
+		return nil, jwt.ErrSignatureInvalid
 	}
 
-	return nil, jwt.ErrSignatureInvalid
+	// Get user roles from database if needed
+	// You might want to add a method to fetch roles here
+
+	return &claims, nil
 }

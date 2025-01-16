@@ -8,13 +8,15 @@ import (
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
+	"gorm.io/gorm"
 )
 
-func Auth(jwt *auth.JWT) func(http.Handler) http.Handler {
+func Auth(jwt *auth.JWT, db *gorm.DB) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token := r.Header.Get("Authorization")
 			token = strings.TrimPrefix(token, "Bearer ")
+
 			if token == "" {
 				next.ServeHTTP(w, r)
 				return
@@ -26,14 +28,26 @@ func Auth(jwt *auth.JWT) func(http.Handler) http.Handler {
 				return
 			}
 
-			// Use the same keys from auth package
+			// Fetch roles from database
+			var roles []string
+			err = db.Table("roles").
+				Joins("JOIN user_roles ON roles.id = user_roles.role_id").
+				Where("user_roles.user_id = ?", claims.UserID).
+				Pluck("roles.name", &roles).Error
+
+			if err != nil {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// Add claims to context
 			ctx := context.WithValue(r.Context(), auth.UserIDKey, claims.UserID)
-			ctx = context.WithValue(ctx, auth.RolesKey, claims.Roles)
+			ctx = context.WithValue(ctx, auth.RolesKey, roles)
+
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
-
 func AuthDirective(ctx context.Context, obj interface{}, next graphql.Resolver) (interface{}, error) {
 	userId := ctx.Value(auth.UserIDKey)
 	if userId == nil {

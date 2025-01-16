@@ -61,7 +61,7 @@ func main() {
 	srv.Use(extension.Introspection{})
 
 	router.Handle("/", playground.Handler("Pulse", "/query"))
-	router.Handle("/query", pulse_middleware.Auth(jwtAuth)(srv))
+	router.Handle("/query", pulse_middleware.Auth(jwtAuth, database)(srv))
 
 	/*
 		router.Options("/*", func(w http.ResponseWriter, r *http.Request) {
