@@ -1,4 +1,5 @@
 /* eslint-disable */
+import { DocumentTypeDecoration } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -317,6 +318,11 @@ export type CreateWalletInput = {
   name: Scalars['String']['input'];
 };
 
+export type WalletsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', id: any, name: string, createdAt: any, updatedAt: any, subwallets: Array<{ __typename?: 'Subwallet', id: any }> }> };
+
 export class TypedDocumentString<TResult, TVariables>
   extends String
   implements DocumentTypeDecoration<TResult, TVariables>
@@ -332,6 +338,19 @@ export class TypedDocumentString<TResult, TVariables>
   }
 }
 
+export const WalletsDocument = new TypedDocumentString(`
+    query Wallets {
+  wallets {
+    id
+    name
+    createdAt
+    updatedAt
+    subwallets {
+      id
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<WalletsQuery, WalletsQueryVariables>;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: { input: string; output: string; }
@@ -642,3 +661,8 @@ export type CreateSubwalletInput = {
 export type CreateWalletInput = {
   name: Scalars['String']['input'];
 };
+
+export type WalletsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', id: any, name: string, createdAt: any, updatedAt: any, subwallets: Array<{ __typename?: 'Subwallet', id: any }> }> };

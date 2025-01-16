@@ -36,7 +36,7 @@ func main() {
 	router.Use(middleware.AllowContentType("application/json"))
 	router.Use(middleware.SetHeader("Access-Control-Allow-Origin", "*"))
 	router.Use(middleware.SetHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS"))
-	router.Use(middleware.SetHeader("Access-Control-Allow-Headers", "Content-Type"))
+	router.Use(middleware.SetHeader("Access-Control-Allow-Headers", "Content-Type, Authorization"))
 
 	// Create Loaders
 	solana_loader := loaders.NewSolanaLoader(cfg)
