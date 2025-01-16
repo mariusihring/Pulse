@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as LoginImport } from './routes/login'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
+import { Route as IndexImport } from './routes/index'
 import { Route as AuthenticatedDashboardImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChainsImport } from './routes/_authenticated/chains'
 import { Route as AuthenticatedWalletsIndexImport } from './routes/_authenticated/wallets/index'
@@ -32,6 +33,12 @@ const LoginRoute = LoginImport.update({
 
 const AuthenticatedRoute = AuthenticatedImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const IndexRoute = IndexImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -93,6 +100,13 @@ const AuthenticatedWalletsWalletWalletIdRoute =
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -196,6 +210,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/chains': typeof AuthenticatedChainsRoute
@@ -209,6 +224,7 @@ export interface FileRoutesByFullPath {
 }
 
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/chains': typeof AuthenticatedChainsRoute
@@ -223,6 +239,7 @@ export interface FileRoutesByTo {
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
+  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/chains': typeof AuthenticatedChainsRoute
@@ -238,6 +255,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | ''
     | '/login'
     | '/chains'
@@ -250,6 +268,7 @@ export interface FileRouteTypes {
     | '/wallets/wallet/$walletId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | ''
     | '/login'
     | '/chains'
@@ -262,6 +281,7 @@ export interface FileRouteTypes {
     | '/wallets/wallet/$walletId'
   id:
     | '__root__'
+    | '/'
     | '/_authenticated'
     | '/login'
     | '/_authenticated/chains'
@@ -276,11 +296,13 @@ export interface FileRouteTypes {
 }
 
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
 }
@@ -295,9 +317,13 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
+        "/",
         "/_authenticated",
         "/login"
       ]
+    },
+    "/": {
+      "filePath": "index.tsx"
     },
     "/_authenticated": {
       "filePath": "_authenticated.tsx",

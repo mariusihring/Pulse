@@ -323,6 +323,13 @@ export type WalletsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any }>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any }> }> }> };
 
+export type WalletDetailQueryQueryVariables = Exact<{
+  id: Scalars['UUID']['input'];
+}>;
+
+
+export type WalletDetailQueryQuery = { __typename?: 'Query', wallet: { __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any }>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any }> }> } };
+
 export class TypedDocumentString<TResult, TVariables>
   extends String
   implements DocumentTypeDecoration<TResult, TVariables>
@@ -366,6 +373,34 @@ export const WalletsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<WalletsQuery, WalletsQueryVariables>;
+export const WalletDetailQueryDocument = new TypedDocumentString(`
+    query WalletDetailQuery($id: UUID!) {
+  wallet(id: $id) {
+    subwallets {
+      id
+      createdAt
+      updatedAt
+      name
+      tokens {
+        amount
+        valueUsd
+        totalPnl
+      }
+      snapshots {
+        snapshotDate
+        totalPnl
+        totalValue
+        id
+        createdAt
+      }
+    }
+    createdAt
+    id
+    updatedAt
+    name
+  }
+}
+    `) as unknown as TypedDocumentString<WalletDetailQueryQuery, WalletDetailQueryQueryVariables>;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: { input: string; output: string; }
@@ -681,3 +716,10 @@ export type WalletsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any }>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any }> }> }> };
+
+export type WalletDetailQueryQueryVariables = Exact<{
+  id: Scalars['UUID']['input'];
+}>;
+
+
+export type WalletDetailQueryQuery = { __typename?: 'Query', wallet: { __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any }>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any }> }> } };

@@ -1,19 +1,23 @@
 import * as React from "react";
-import { Outlet, createRootRoute, useNavigate } from "@tanstack/react-router";
+import {
+	Outlet,
+	createRootRouteWithContext,
+} from "@tanstack/react-router";
 import { AuthProvider, useAuth } from "@/contexts/auth_context";
+import type { QueryClient } from "@tanstack/react-query";
 
-export const Route = createRootRoute({
-  component: RootComponent,
- 
-});
-
-function RootComponent() {
-  return (
-    <AuthProvider>
-      <React.Fragment>
-      <Outlet />
-    </React.Fragment>
-</AuthProvider>
-    
-  );
+interface RouterContext {
+	queryClient: QueryClient;
 }
+
+export const Route = createRootRouteWithContext<RouterContext>()({
+	component: () => (
+		<>
+			<AuthProvider>
+				<React.Fragment>
+					<Outlet />
+				</React.Fragment>
+			</AuthProvider>
+		</>
+	),
+});

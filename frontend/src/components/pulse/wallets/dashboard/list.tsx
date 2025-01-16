@@ -10,6 +10,7 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import MiniGraph from "./mini_graph";
 import type { Wallet } from "@/graphql/graphql";
+import { Link } from "@tanstack/react-router";
 
 export default function WalletList({ wallets }: { wallets: Wallet[] }) {
   return (
@@ -59,9 +60,12 @@ export default function WalletList({ wallets }: { wallets: Wallet[] }) {
                 </div>
               </TableCell>
               <TableCell>
-                <Button variant="ghost" size="icon">
+              <Link to="/wallets/wallet/$walletId" params={{ walletId: wallet.id }}>
+              <Button variant="ghost" size="icon">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
+            </Link>
+                
               </TableCell>
             </TableRow>
           );

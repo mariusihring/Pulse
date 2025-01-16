@@ -134,7 +134,6 @@ func (s *WalletService) CreateSubwallet(ctx context.Context, input *graphql_mode
 		ChainID:  input.ChainID,
 	}
 
-	// TODO: fetch WalletInfo via the corresponding loader service.
 	tokens, err := s.loaders.Solana.LoadWallet(input.Address)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load wallet: %w", err)
