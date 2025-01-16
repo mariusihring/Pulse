@@ -1,17 +1,10 @@
-import * as React from "react";
+
 import {
   BookOpen,
   Bot,
-  Command,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
   Settings2,
   SquareTerminal,
-  SquareActivity,
-  Square
+  Bitcoin
 } from "lucide-react";
 
 import {
@@ -84,7 +77,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <div className="flex">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <SquareActivity className="size-4" />
+                  <Bitcoin className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Pulse</span>
@@ -99,6 +92,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
+        {/* @ts-expect-error: this is supabase type. have to fix TODO: fix this */}
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>

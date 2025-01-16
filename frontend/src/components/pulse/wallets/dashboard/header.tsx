@@ -36,10 +36,10 @@ export default function DashboardHeader() {
           <Button variant="outline" size="icon">
             <RefreshCw className="h-4 w-4" />
           </Button>
-          <Button variant="outline">
+          {/* <Button variant="outline">
             <Plus className="h-4 w-4 mr-2" />
             Add Transaction
-          </Button>
+          </Button> */}
           <Button>
             <Wallet className="h-4 w-4 mr-2" />
             Add Wallet
