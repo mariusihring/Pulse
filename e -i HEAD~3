@@ -1,0 +1,107 @@
+[33mcommit 32167c31e8001beb6cb02c66f0c76b2fd4b643d6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Annika Jung <134299148+annikajung@users.noreply.github.com>
+Date:   Thu Jan 16 22:09:10 2025 +0100
+
+    feat (naming): update naming and icon of the application
+
+[33mcommit 618082d7ebf56a06b688e88284285ba0312517a6[m
+Author: Annika Jung <134299148+annikajung@users.noreply.github.com>
+Date:   Thu Jan 16 21:57:37 2025 +0100
+
+    feat (wallet): wallet detail view start
+
+[33mcommit d9dbeb67ee3f318aea2ce6e220e0cb72908ae660[m
+Author: Annika Jung <134299148+annikajung@users.noreply.github.com>
+Date:   Thu Jan 16 21:05:24 2025 +0100
+
+    feat (graphgql): working loading in the frontend
+
+[33mcommit 5ef742532f5c47304923b6b9229ec26b3e231316[m
+Author: mariusihring <marius.ihring@icloud.com>
+Date:   Thu Jan 16 09:50:02 2025 +0100
+
+    feat (auth): maybe works with supabase auth idk, danke proxy
+
+[33mcommit f440d7772f2b03061140c9c91836590b061b30c4[m
+Author: mariusihring <marius.ihring@icloud.com>
+Date:   Thu Jan 16 09:34:02 2025 +0100
+
+    setup graphql
+
+[33mcommit 2f86a25df6f29815b7671fb9cebdf47d3eff2f89[m
+Author: Marius <marius.ihring@icloud.com>
+Date:   Wed Jan 15 22:22:48 2025 +0100
+
+    feat (wallets): wallets dashboard 40% working wow, mock these data streams
+
+[33mcommit 018b13769111e0b726d129bedfea5053b7abe73a[m
+Author: mariusihring <marius.ihring@icloud.com>
+Date:   Wed Jan 15 15:17:08 2025 +0100
+
+    feat (auth): used supabase auth in the frontend
+
+[33mcommit 9b44fb8436b65cba42048200fcd05b0676b42721[m
+Author: Marius <marius.ihring@icloud.com>
+Date:   Tue Jan 14 23:40:48 2025 +0100
+
+    feat (navbar): added placeholder routes to the application
+
+[33mcommit 4f5073ce4575971cf6fa2ad99b64bf762bb7a5cb[m
+Author: Marius <marius.ihring@icloud.com>
+Date:   Tue Jan 14 23:28:58 2025 +0100
+
+    feat (navbar): add placeholder nav bar to the frontend
+
+[33mcommit 8323ec6a5a5647ffa948889011679316b8832a1b[m
+Author: Marius <marius.ihring@icloud.com>
+Date:   Tue Jan 14 22:46:43 2025 +0100
+
+    feat (graphql): load schema in frontend
+
+[33mcommit 92669752583496c8a1d9f8be04b80397420bc07c[m
+Author: Marius <marius.ihring@icloud.com>
+Date:   Tue Jan 14 22:38:08 2025 +0100
+
+    feat (router): add router to frontend
+
+[33mcommit 300828241ddfb1c4ca80589e382598efa2c15c06[m
+Author: Marius <marius.ihring@icloud.com>
+Date:   Tue Jan 14 22:22:17 2025 +0100
+
+    feat (frontend): added frontend directory
+
+[33mcommit 3453acbbdff3a32699e891429296622d489c2349[m
+Author: Marius <marius.ihring@icloud.com>
+Date:   Tue Jan 14 22:07:03 2025 +0100
+
+    chore (env): add example env
+
+[33mcommit 93450bc6a298bdec2eada6cec9ce8fe7b34d673b[m
+Author: Marius <marius.ihring@icloud.com>
+Date:   Tue Jan 14 22:04:45 2025 +0100
+
+    chore (api): refactor the code into a backend folder
+
+[33mcommit 507d1f0d19bb086ad33056f330770080d4ea3178[m
+Author: Marius <marius.ihring@icloud.com>
+Date:   Tue Jan 14 22:03:27 2025 +0100
+
+    feat (wallets): Solana wallet tokens are loaded on subwallet create
+
+[33mcommit 820424d1e3b3ce5032e772d7ae52b4f73c9c9de5[m
+Author: mariusihring <marius.ihring@icloud.com>
+Date:   Tue Jan 14 10:15:48 2025 +0100
+
+    feat (loaders): added solana loaders and integrated it in the server
+
+[33mcommit 4e990c5052e9b5003f35859dbf659b9b613d2885[m
+Author: Marius <marius.ihring@icloud.com>
+Date:   Mon Jan 13 00:11:52 2025 +0100
+
+    feat (wallets): wallet service, wallet resolvers, fix (middleware): fix the auth middleware to pass userID to resolvers
+
+[33mcommit 1e4086a59c6ce5f9130203b300792d8a98ddc886[m
+Author: Marius <marius.ihring@icloud.com>
+Date:   Sun Jan 12 01:15:05 2025 +0100
+
+    rework the whole thing wow

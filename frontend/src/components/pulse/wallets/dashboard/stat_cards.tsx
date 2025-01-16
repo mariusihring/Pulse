@@ -8,16 +8,17 @@ import {
 import type { Subwallet, Wallet } from "@/graphql/graphql";
 
 export default function StatsCards({ wallets }: { wallets: Wallet[] }) {
-  const totalBalance = 0;
+  const totalBalance = 1000000;
   //wallets.reduce(
   //  (sum, wallet) => sum + (wallet.usdBalance ?? 0),
   //  0,
   //);
-  const totalTransactions = wallets.reduce(
-    (sum, wallet) => sum + wallet.subwallets.length,
-    0,
-  );
-  const averageChange = 0;
+  const totalTransactions = 69420
+  // wallets.reduce(
+  //   (sum, wallet) => sum + wallet.subwallets.length,
+  //   0,
+  // );
+  const averageChange = 12;
   // wallets.reduce((sum, wallet) => sum + (wallet.change24h ?? 0), 0) /
   //wallets.length;
 

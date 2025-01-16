@@ -3,7 +3,7 @@ type Wallet {
   createdAt: Time!
   updatedAt: Time!
   name: String!
-  subwallets: [Subwallet!]!
+  subwallets: [Subwallet]!
 }
 
 type Subwallet {
@@ -12,8 +12,8 @@ type Subwallet {
   updatedAt: Time!
   name: String!
   chain: Chain!
-  tokens: [SubwalletToken!]!
-  snapshots: [Snapshot!]!
+  tokens: [SubwalletToken]!
+  snapshots: [Snapshot]!
   address: String!
 }
 
@@ -29,7 +29,7 @@ input createSubwalletInput {
 }
 
 extend type Query {
-  wallets: [Wallet!]! @auth
+  wallets: [Wallet]! @auth
   wallet(id: UUID!): Wallet! @auth
   subwallet(id: UUID!): Subwallet! @auth
 }

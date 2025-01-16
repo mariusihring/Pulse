@@ -321,7 +321,7 @@ export type CreateWalletInput = {
 export type WalletsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', id: any, name: string, createdAt: any, updatedAt: any, subwallets: Array<{ __typename?: 'Subwallet', id: any }> }> };
+export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any }>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any }> }> }> };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -341,13 +341,28 @@ export class TypedDocumentString<TResult, TVariables>
 export const WalletsDocument = new TypedDocumentString(`
     query Wallets {
   wallets {
-    id
-    name
-    createdAt
-    updatedAt
     subwallets {
       id
+      createdAt
+      updatedAt
+      name
+      tokens {
+        amount
+        valueUsd
+        totalPnl
+      }
+      snapshots {
+        snapshotDate
+        totalPnl
+        totalValue
+        id
+        createdAt
+      }
     }
+    createdAt
+    id
+    updatedAt
+    name
   }
 }
     `) as unknown as TypedDocumentString<WalletsQuery, WalletsQueryVariables>;
@@ -665,4 +680,4 @@ export type CreateWalletInput = {
 export type WalletsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', id: any, name: string, createdAt: any, updatedAt: any, subwallets: Array<{ __typename?: 'Subwallet', id: any }> }> };
+export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any }>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any }> }> }> };
