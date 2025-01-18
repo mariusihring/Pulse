@@ -50,7 +50,7 @@ type Config struct {
 
 	ApiKeys struct {
 		Blockdaemon string
-		Coinbase    string
+		Coingecko   string
 	}
 }
 
@@ -94,7 +94,7 @@ func Load() *Config {
 
 	// API keys
 	config.ApiKeys.Blockdaemon = getEnvRequired("BLOCKDAEMON_KEY")
-	config.ApiKeys.Coinbase = getEnvRequired("COINBASE_KEY")
+	config.ApiKeys.Coingecko = getEnvRequired("COINGECKO_KEY")
 
 	return config
 }
