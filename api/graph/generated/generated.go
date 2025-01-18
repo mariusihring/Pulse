@@ -145,14 +145,15 @@ type ComplexityRoot struct {
 	}
 
 	Subwallet struct {
-		Address   func(childComplexity int) int
-		Chain     func(childComplexity int) int
-		CreatedAt func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Name      func(childComplexity int) int
-		Snapshots func(childComplexity int) int
-		Tokens    func(childComplexity int) int
-		UpdatedAt func(childComplexity int) int
+		Address      func(childComplexity int) int
+		Chain        func(childComplexity int) int
+		CreatedAt    func(childComplexity int) int
+		CurrentValue func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Name         func(childComplexity int) int
+		Snapshots    func(childComplexity int) int
+		Tokens       func(childComplexity int) int
+		UpdatedAt    func(childComplexity int) int
 	}
 
 	SubwalletToken struct {
@@ -808,6 +809,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Subwallet.CreatedAt(childComplexity), true
+
+	case "Subwallet.currentValue":
+		if e.complexity.Subwallet.CurrentValue == nil {
+			break
+		}
+
+		return e.complexity.Subwallet.CurrentValue(childComplexity), true
 
 	case "Subwallet.id":
 		if e.complexity.Subwallet.ID == nil {
@@ -1489,7 +1497,7 @@ type Query {
   createdAt: Time!
   updatedAt: Time!
   name: String!
-  subwallets: [Subwallet!]!
+  subwallets: [Subwallet]!
 }
 
 type Subwallet {
@@ -1498,9 +1506,10 @@ type Subwallet {
   updatedAt: Time!
   name: String!
   chain: Chain!
-  tokens: [SubwalletToken!]!
-  snapshots: [Snapshot!]!
+  tokens: [SubwalletToken]!
+  snapshots: [Snapshot]!
   address: String!
+  currentValue: Float!
 }
 
 input createWalletInput {
@@ -1515,7 +1524,7 @@ input createSubwalletInput {
 }
 
 extend type Query {
-  wallets: [Wallet!]! @auth
+  wallets: [Wallet]! @auth
   wallet(id: UUID!): Wallet! @auth
   subwallet(id: UUID!): Subwallet! @auth
 }
@@ -2839,6 +2848,8 @@ func (ec *executionContext) fieldContext_Chain_subwallets(_ context.Context, fie
 				return ec.fieldContext_Subwallet_snapshots(ctx, field)
 			case "address":
 				return ec.fieldContext_Subwallet_address(ctx, field)
+			case "currentValue":
+				return ec.fieldContext_Subwallet_currentValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Subwallet", field.Name)
 		},
@@ -3758,6 +3769,8 @@ func (ec *executionContext) fieldContext_Mutation_createSubwallet(ctx context.Co
 				return ec.fieldContext_Subwallet_snapshots(ctx, field)
 			case "address":
 				return ec.fieldContext_Subwallet_address(ctx, field)
+			case "currentValue":
+				return ec.fieldContext_Subwallet_currentValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Subwallet", field.Name)
 		},
@@ -5388,7 +5401,7 @@ func (ec *executionContext) _Query_wallets(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]*graphql_model.Wallet)
 	fc.Result = res
-	return ec.marshalNWallet2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐWalletᚄ(ctx, field.Selections, res)
+	return ec.marshalNWallet2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐWallet(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_wallets(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5582,6 +5595,8 @@ func (ec *executionContext) fieldContext_Query_subwallet(ctx context.Context, fi
 				return ec.fieldContext_Subwallet_snapshots(ctx, field)
 			case "address":
 				return ec.fieldContext_Subwallet_address(ctx, field)
+			case "currentValue":
+				return ec.fieldContext_Subwallet_currentValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Subwallet", field.Name)
 		},
@@ -6112,6 +6127,8 @@ func (ec *executionContext) fieldContext_Snapshot_subwallet(_ context.Context, f
 				return ec.fieldContext_Subwallet_snapshots(ctx, field)
 			case "address":
 				return ec.fieldContext_Subwallet_address(ctx, field)
+			case "currentValue":
+				return ec.fieldContext_Subwallet_currentValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Subwallet", field.Name)
 		},
@@ -6511,7 +6528,7 @@ func (ec *executionContext) _Subwallet_tokens(ctx context.Context, field graphql
 	}
 	res := resTmp.([]*graphql_model.SubwalletToken)
 	fc.Result = res
-	return ec.marshalNSubwalletToken2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐSubwalletTokenᚄ(ctx, field.Selections, res)
+	return ec.marshalNSubwalletToken2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐSubwalletToken(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Subwallet_tokens(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6573,7 +6590,7 @@ func (ec *executionContext) _Subwallet_snapshots(ctx context.Context, field grap
 	}
 	res := resTmp.([]*graphql_model.Snapshot)
 	fc.Result = res
-	return ec.marshalNSnapshot2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐSnapshotᚄ(ctx, field.Selections, res)
+	return ec.marshalNSnapshot2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐSnapshot(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Subwallet_snapshots(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6642,6 +6659,50 @@ func (ec *executionContext) fieldContext_Subwallet_address(_ context.Context, fi
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subwallet_currentValue(ctx context.Context, field graphql.CollectedField, obj *graphql_model.Subwallet) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subwallet_currentValue(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CurrentValue, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Subwallet_currentValue(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subwallet",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -8793,7 +8854,7 @@ func (ec *executionContext) _Wallet_subwallets(ctx context.Context, field graphq
 	}
 	res := resTmp.([]*graphql_model.Subwallet)
 	fc.Result = res
-	return ec.marshalNSubwallet2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐSubwalletᚄ(ctx, field.Selections, res)
+	return ec.marshalNSubwallet2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐSubwallet(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Wallet_subwallets(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8820,6 +8881,8 @@ func (ec *executionContext) fieldContext_Wallet_subwallets(_ context.Context, fi
 				return ec.fieldContext_Subwallet_snapshots(ctx, field)
 			case "address":
 				return ec.fieldContext_Subwallet_address(ctx, field)
+			case "currentValue":
+				return ec.fieldContext_Subwallet_currentValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Subwallet", field.Name)
 		},
@@ -11843,6 +11906,11 @@ func (ec *executionContext) _Subwallet(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "currentValue":
+			out.Values[i] = ec._Subwallet_currentValue(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12825,6 +12893,21 @@ func (ec *executionContext) marshalNDecimal2string(ctx context.Context, sel ast.
 	return res
 }
 
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v any) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloatContext(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
 func (ec *executionContext) marshalNHistoricalPrice2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐHistoricalPriceᚄ(ctx context.Context, sel ast.SelectionSet, v []*graphql_model.HistoricalPrice) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -13011,7 +13094,7 @@ func (ec *executionContext) marshalNRole2ᚖpulseᚋgraphᚋgraphql_modelᚐRole
 	return ec._Role(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNSnapshot2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐSnapshotᚄ(ctx context.Context, sel ast.SelectionSet, v []*graphql_model.Snapshot) graphql.Marshaler {
+func (ec *executionContext) marshalNSnapshot2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐSnapshot(ctx context.Context, sel ast.SelectionSet, v []*graphql_model.Snapshot) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -13035,7 +13118,7 @@ func (ec *executionContext) marshalNSnapshot2ᚕᚖpulseᚋgraphᚋgraphql_model
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNSnapshot2ᚖpulseᚋgraphᚋgraphql_modelᚐSnapshot(ctx, sel, v[i])
+			ret[i] = ec.marshalOSnapshot2ᚖpulseᚋgraphᚋgraphql_modelᚐSnapshot(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -13046,23 +13129,7 @@ func (ec *executionContext) marshalNSnapshot2ᚕᚖpulseᚋgraphᚋgraphql_model
 	}
 	wg.Wait()
 
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
 	return ret
-}
-
-func (ec *executionContext) marshalNSnapshot2ᚖpulseᚋgraphᚋgraphql_modelᚐSnapshot(ctx context.Context, sel ast.SelectionSet, v *graphql_model.Snapshot) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Snapshot(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
@@ -13082,6 +13149,44 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 
 func (ec *executionContext) marshalNSubwallet2pulseᚋgraphᚋgraphql_modelᚐSubwallet(ctx context.Context, sel ast.SelectionSet, v graphql_model.Subwallet) graphql.Marshaler {
 	return ec._Subwallet(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSubwallet2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐSubwallet(ctx context.Context, sel ast.SelectionSet, v []*graphql_model.Subwallet) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOSubwallet2ᚖpulseᚋgraphᚋgraphql_modelᚐSubwallet(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) marshalNSubwallet2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐSubwalletᚄ(ctx context.Context, sel ast.SelectionSet, v []*graphql_model.Subwallet) graphql.Marshaler {
@@ -13136,6 +13241,44 @@ func (ec *executionContext) marshalNSubwallet2ᚖpulseᚋgraphᚋgraphql_model�
 		return graphql.Null
 	}
 	return ec._Subwallet(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSubwalletToken2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐSubwalletToken(ctx context.Context, sel ast.SelectionSet, v []*graphql_model.SubwalletToken) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOSubwalletToken2ᚖpulseᚋgraphᚋgraphql_modelᚐSubwalletToken(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) marshalNSubwalletToken2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐSubwalletTokenᚄ(ctx context.Context, sel ast.SelectionSet, v []*graphql_model.SubwalletToken) graphql.Marshaler {
@@ -13504,6 +13647,44 @@ func (ec *executionContext) marshalNWallet2pulseᚋgraphᚋgraphql_modelᚐWalle
 	return ec._Wallet(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNWallet2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐWallet(ctx context.Context, sel ast.SelectionSet, v []*graphql_model.Wallet) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOWallet2ᚖpulseᚋgraphᚋgraphql_modelᚐWallet(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
 func (ec *executionContext) marshalNWallet2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐWalletᚄ(ctx context.Context, sel ast.SelectionSet, v []*graphql_model.Wallet) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -13847,6 +14028,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) marshalOSnapshot2ᚖpulseᚋgraphᚋgraphql_modelᚐSnapshot(ctx context.Context, sel ast.SelectionSet, v *graphql_model.Snapshot) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Snapshot(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -13861,6 +14049,27 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOSubwallet2ᚖpulseᚋgraphᚋgraphql_modelᚐSubwallet(ctx context.Context, sel ast.SelectionSet, v *graphql_model.Subwallet) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Subwallet(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSubwalletToken2ᚖpulseᚋgraphᚋgraphql_modelᚐSubwalletToken(ctx context.Context, sel ast.SelectionSet, v *graphql_model.SubwalletToken) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SubwalletToken(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOWallet2ᚖpulseᚋgraphᚋgraphql_modelᚐWallet(ctx context.Context, sel ast.SelectionSet, v *graphql_model.Wallet) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Wallet(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

@@ -103,14 +103,15 @@ type Snapshot struct {
 }
 
 type Subwallet struct {
-	ID        uuid.UUID         `json:"id"`
-	CreatedAt time.Time         `json:"createdAt"`
-	UpdatedAt time.Time         `json:"updatedAt"`
-	Name      string            `json:"name"`
-	Chain     *Chain            `json:"chain"`
-	Tokens    []*SubwalletToken `json:"tokens"`
-	Snapshots []*Snapshot       `json:"snapshots"`
-	Address   string            `json:"address"`
+	ID           uuid.UUID         `json:"id"`
+	CreatedAt    time.Time         `json:"createdAt"`
+	UpdatedAt    time.Time         `json:"updatedAt"`
+	Name         string            `json:"name"`
+	Chain        *Chain            `json:"chain"`
+	Tokens       []*SubwalletToken `json:"tokens"`
+	Snapshots    []*Snapshot       `json:"snapshots"`
+	Address      string            `json:"address"`
+	CurrentValue float64           `json:"currentValue"`
 }
 
 type SubwalletToken struct {

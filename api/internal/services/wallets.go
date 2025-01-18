@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math"
 	"pulse/graph/graphql_model"
 	"pulse/internal/auth"
 	"pulse/internal/db/models"
 	"pulse/internal/services/loaders"
 
+	"github.com/charmbracelet/log"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -76,12 +76,13 @@ func toGQLSubwallet(s *models.Subwallet) *graphql_model.Subwallet {
 	}
 
 	return &graphql_model.Subwallet{
-		ID:        s.ID,
-		CreatedAt: s.CreatedAt,
-		UpdatedAt: s.UpdatedAt,
-		Name:      s.Name,
-		Address:   s.Address,
-		Chain:     chain,
+		ID:           s.ID,
+		CreatedAt:    s.CreatedAt,
+		UpdatedAt:    s.UpdatedAt,
+		Name:         s.Name,
+		Address:      s.Address,
+		Chain:        chain,
+		CurrentValue: s.CurrentValue,
 	}
 }
 
@@ -128,6 +129,11 @@ func (s *WalletService) GetWallets(ctx context.Context) ([]*graphql_model.Wallet
 }
 
 func (s *WalletService) CreateSubwallet(ctx context.Context, input *graphql_model.CreateSubwalletInput) (*graphql_model.Subwallet, error) {
+	log.Info("creating subwallet",
+		"wallet_id", input.WalletID,
+		"chain_id", input.ChainID,
+		"address", input.Address)
+
 	// Verify wallet exists
 	var wallet models.Wallet
 	if err := s.db.First(&wallet, "id = ?", input.WalletID).Error; err != nil {
@@ -152,17 +158,23 @@ func (s *WalletService) CreateSubwallet(ctx context.Context, input *graphql_mode
 	// Load token balances
 	tokens, err := s.loaders.Solana.LoadWallet(input.Address)
 	if err != nil {
+		log.Error("failed to load wallet",
+			"address", input.Address,
+			"error", err)
 		return nil, fmt.Errorf("failed to load wallet: %w", err)
 	}
 
-	// Calculate portfolio metrics
 	var totalCurrentValue float64
 	var portfolioTokens []TokenMetrics
 
 	for _, token := range tokens {
 		if token.ConfirmedBalance == "0" {
-			continue // Skip tokens with zero balance
+			continue
 		}
+
+		logger := log.With(
+			"symbol", token.Currency.Symbol,
+			"asset_path", token.Currency.AssetPath)
 
 		metrics := TokenMetrics{
 			Symbol:    token.Currency.Symbol,
@@ -172,51 +184,68 @@ func (s *WalletService) CreateSubwallet(ctx context.Context, input *graphql_mode
 		// Calculate actual token balance
 		balance, err := calculateTokenBalance(token.ConfirmedBalance, token.Currency.Decimals)
 		if err != nil {
-			log.Printf("warning: failed to calculate balance for %s: %v", token.Currency.Symbol, err)
+			logger.Warn("failed to calculate balance", "error", err)
 			continue
 		}
 		metrics.Balance = balance
 
-		// Get current token price
+		// Get current price first
 		currentPrice := 0.0
 		if token.Currency.AssetPath == "solana/native/sol" {
-			price, err := s.loaders.Solana.LoadCurrentSolanaPrice()
-			if err != nil {
-				log.Printf("warning: failed to fetch SOL price: %v", err)
-				continue
-			}
-			currentPrice = price
+			currentPrice, err = s.loaders.Solana.LoadCurrentSolanaPrice()
 		} else {
-			price, _, err := s.loaders.Solana.LoadTokenPrice(token.Currency.AssetPath)
-			if err != nil {
-				log.Printf("warning: failed to fetch price for %s: %v", token.Currency.Symbol, err)
-				continue
-			}
-			currentPrice = price
+			currentPrice, _, err = s.loaders.Solana.LoadTokenPrice(token.Currency.AssetPath)
 		}
-		metrics.CurrentPrice = currentPrice
-
-		// Calculate current value
-		currentTokenValue := balance * currentPrice
-		metrics.CurrentValue = currentTokenValue
-		totalCurrentValue += currentTokenValue
-
-		// Load historical transactions
-		transactions, err := s.loaders.Solana.LoadTransactions(input.Address, token.Currency.AssetPath)
 		if err != nil {
-			log.Printf("warning: failed to load transactions for %s: %v", token.Currency.Symbol, err)
+			logger.Warn("failed to fetch current price", "error", err)
 			continue
 		}
 
-		// Calculate invested value from transactions
+		metrics.CurrentPrice = currentPrice
+		metrics.CurrentValue = balance * currentPrice
+		totalCurrentValue += metrics.CurrentValue
+
+		// Now load historical data for cost basis calculation
+		transactions, err := s.loaders.Solana.LoadTransactions(input.Address, token.Currency.AssetPath)
+		if err != nil {
+			logger.Warn("failed to load transactions", "error", err)
+			continue
+		}
+
+		if len(transactions) == 0 {
+			logger.Debug("no transactions found")
+			continue
+		}
+
+		// Find transaction date range
+		firstTx := transactions[len(transactions)-1]
+		lastTx := transactions[0]
+
+		logger.Debug("loading historical prices",
+			"from", firstTx.Date,
+			"to", lastTx.Date)
+
+		// Load historical prices
+		var historicalPrices map[string]float64
+		if token.Currency.AssetPath == "solana/native/sol" {
+			historicalPrices, err = s.loaders.Solana.LoadHistoricalSolanaPrices(firstTx.Date, lastTx.Date)
+		} else {
+			historicalPrices, err = s.loaders.Solana.LoadHistoricalTokenPrices(token.Currency.AssetPath, firstTx.Date, lastTx.Date)
+		}
+		if err != nil {
+			logger.Warn("failed to fetch historical prices", "error", err)
+			continue
+		}
+
+		// Calculate invested value
 		var totalCost float64
 		var totalAmount float64
 
 		for _, tx := range transactions {
-			// Get historical price at transaction time
-			historicalPrice, err := s.loaders.Solana.LoadHistoricalPrice(token.Currency.AssetPath, tx.Date)
-			if err != nil {
-				log.Printf("warning: failed to fetch historical price: %v", err)
+			dateKey := tx.Date.Format("2006-01-02")
+			historicalPrice, exists := historicalPrices[dateKey]
+			if !exists {
+				logger.Warn("no historical price found", "date", dateKey)
 				continue
 			}
 
@@ -224,49 +253,53 @@ func (s *WalletService) CreateSubwallet(ctx context.Context, input *graphql_mode
 			case "RECEIVE":
 				totalAmount += tx.Amount
 				totalCost += tx.Amount * historicalPrice
-				log.Printf("Buy: Amount: %.8f, Price: $%.2f, Cost: $%.2f",
-					tx.Amount, historicalPrice, tx.Amount*historicalPrice)
+				logger.Debug("buy transaction",
+					"amount", tx.Amount,
+					"price", historicalPrice,
+					"cost", tx.Amount*historicalPrice)
 			case "SEND":
-				// For sells, remove proportional amount of cost basis
 				if totalAmount > 0 {
 					costBasisPerToken := totalCost / totalAmount
 					removedCost := tx.Amount * costBasisPerToken
 					totalCost -= removedCost
 					totalAmount -= tx.Amount
-					log.Printf("Sell: Amount: %.8f, Cost Basis: $%.2f, Removed Cost: $%.2f",
-						tx.Amount, costBasisPerToken, removedCost)
+					logger.Debug("sell transaction",
+						"amount", tx.Amount,
+						"cost_basis", costBasisPerToken,
+						"removed_cost", removedCost)
 				}
 			}
 		}
 
-		// Calculate average cost basis if we have any remaining tokens
+		// Calculate metrics
 		var avgCostBasis float64
 		if totalAmount > 0 {
 			avgCostBasis = totalCost / totalAmount
 		}
 
 		metrics.InvestedValue = balance * avgCostBasis
-		metrics.PnL = currentTokenValue - metrics.InvestedValue
+		metrics.PnL = metrics.CurrentValue - metrics.InvestedValue
 		if metrics.InvestedValue > 0 {
 			metrics.PnLPercentage = (metrics.PnL / metrics.InvestedValue) * 100
 		}
 
 		portfolioTokens = append(portfolioTokens, metrics)
 
-		// Log token metrics
-		log.Printf("\nToken: %s", metrics.Symbol)
-		log.Printf("  Balance: %.8f", metrics.Balance)
-		log.Printf("  Current Price: $%.2f", metrics.CurrentPrice)
-		log.Printf("  Current Value: $%.2f", metrics.CurrentValue)
-		log.Printf("  Avg Cost Basis: $%.2f", avgCostBasis)
-		log.Printf("  Invested Value: $%.2f", metrics.InvestedValue)
-		log.Printf("  PnL: $%.2f (%.2f%%)", metrics.PnL, metrics.PnLPercentage)
+		logger.Info("token metrics calculated",
+			"balance", metrics.Balance,
+			"current_price", metrics.CurrentPrice,
+			"current_value", metrics.CurrentValue,
+			"avg_cost_basis", avgCostBasis,
+			"invested_value", metrics.InvestedValue,
+			"pnl", metrics.PnL,
+			"pnl_percentage", metrics.PnLPercentage)
 	}
 
-	// Calculate portfolio totals
+	// Calculate and log portfolio totals
 	var totalInvestedValue float64
 	for _, token := range portfolioTokens {
 		totalInvestedValue += token.InvestedValue
+		totalCurrentValue += token.CurrentValue
 	}
 
 	var pnlPercentage float64
@@ -274,21 +307,17 @@ func (s *WalletService) CreateSubwallet(ctx context.Context, input *graphql_mode
 		pnlPercentage = ((totalCurrentValue - totalInvestedValue) / totalInvestedValue) * 100
 	}
 
-	// Log portfolio summary
-	log.Printf("\nPortfolio Summary:")
-	log.Printf("Total Current Value: $%.2f", totalCurrentValue)
-	log.Printf("Total Invested Value: $%.2f", totalInvestedValue)
-	log.Printf("Total PnL: $%.2f (%.2f%%)",
-		totalCurrentValue-totalInvestedValue,
-		pnlPercentage)
+	log.Info("portfolio summary",
+		"current_value", totalCurrentValue,
+		"invested_value", totalInvestedValue,
+		"pnl", totalCurrentValue-totalInvestedValue,
+		"pnl_percentage", pnlPercentage)
 
 	subwallet.CurrentValue = totalCurrentValue
 	// Save subwallet to database
-	/* TODO: reenable
 	if err := s.db.Create(subwallet).Error; err != nil {
 		return nil, fmt.Errorf("failed to create subwallet: %w", err)
 	}
-	*/
 	/*
 		// Store token balances and metrics
 		for _, metrics := range portfolioTokens {

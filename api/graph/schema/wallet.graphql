@@ -15,6 +15,7 @@ type Subwallet {
   tokens: [SubwalletToken]!
   snapshots: [Snapshot]!
   address: String!
+  currentValue: Float!
 }
 
 input createWalletInput {
