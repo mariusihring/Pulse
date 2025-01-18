@@ -12,5 +12,5 @@ type Role struct {
 	UpdatedAt time.Time
 	DeletedAt *time.Time `gorm:"index"`
 	Name      string     `gorm:"not null;unique"`
-	Users     []User     `gorm:"many2many:user_roles"`
+	Users     []User     `gorm:"many2many:user_roles;constraint:OnDelete:CASCADE"`
 }

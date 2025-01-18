@@ -17,5 +17,5 @@ type User struct {
 	Wallets   []Wallet
 	Alerts    []Alert
 	Metrics   []PortfolioMetric
-	Roles     []Role `gorm:"many2many:user_roles"`
+	Roles     []Role `gorm:"many2many:user_roles;constraint:OnDelete:CASCADE"`
 }

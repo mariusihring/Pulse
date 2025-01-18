@@ -13,6 +13,6 @@ type Wallet struct {
 	DeletedAt  *time.Time `gorm:"index"`
 	Name       string     `gorm:"not null"`
 	UserID     uuid.UUID  `gorm:"type:uuid;not null"`
-	User       User       `gorm:"foreignKey:UserID"`
+	User       User       `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
 	Subwallets []Subwallet
 }

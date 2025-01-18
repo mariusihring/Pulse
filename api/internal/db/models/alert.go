@@ -15,6 +15,6 @@ type Alert struct {
 	TokenID              uuid.UUID  `gorm:"type:uuid;not null"`
 	Condition            string     `gorm:"not null"`
 	NotificationSettings string
-	User                 User  `gorm:"foreignKey:UserID"`
-	Token                Token `gorm:"foreignKey:TokenID"`
+	User                 User  `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	Token                Token `gorm:"foreignKey:TokenID;constraint:OnDelete:CASCADE"`
 }

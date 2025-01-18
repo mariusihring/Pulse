@@ -14,5 +14,5 @@ type HistoricalPrice struct {
 	TokenID   uuid.UUID  `gorm:"type:uuid;not null"`
 	Date      time.Time  `gorm:"not null"`
 	Price     float64    `gorm:"not null;type:numeric"`
-	Token     Token      `gorm:"foreignKey:TokenID"`
+	Token     Token      `gorm:"foreignKey:TokenID;constraint:OnDelete:CASCADE"`
 }

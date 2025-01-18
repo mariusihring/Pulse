@@ -14,5 +14,5 @@ type Snapshot struct {
 	SubwalletID  uuid.UUID  `gorm:"type:uuid;not null"`
 	SnapshotDate time.Time  `gorm:"not null;default:now()"`
 	TotalPnl     float64    `gorm:"not null;type:numeric"`
-	Subwallet    Subwallet  `gorm:"foreignKey:SubwalletID"`
+	Subwallet    Subwallet  `gorm:"foreignKey:SubwalletID;constraint:OnDelete:CASCADE"`
 }

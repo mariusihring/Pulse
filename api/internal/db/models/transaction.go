@@ -16,6 +16,6 @@ type Transaction struct {
 	Amount          float64             `gorm:"not null;type:numeric"`
 	TransactionDate time.Time           `gorm:"not null;default:now()"`
 	CategoryID      uuid.UUID           `gorm:"type:uuid;not null"`
-	Token           Token               `gorm:"foreignKey:TokenID"`
-	Category        TransactionCategory `gorm:"foreignKey:CategoryID"`
+	Token           Token               `gorm:"foreignKey:TokenID;constraint:OnDelete:CASCADE"`
+	Category        TransactionCategory `gorm:"foreignKey:CategoryID;constraint:OnDelete:CASCADE"`
 }

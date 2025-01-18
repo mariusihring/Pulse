@@ -14,8 +14,8 @@ type Subwallet struct {
 	Name         string     `gorm:"not null"`
 	WalletID     uuid.UUID  `gorm:"type:uuid;not null"`
 	ChainID      uuid.UUID  `gorm:"type:uuid;not null"`
-	Wallet       Wallet     `gorm:"foreignKey:WalletID"`
-	Chain        Chain      `gorm:"foreignKey:ChainID"`
+	Wallet       Wallet     `gorm:"foreignKey:WalletID;constraint:OnDelete:CASCADE"`
+	Chain        Chain      `gorm:"foreignKey:ChainID;constraint:OnDelete:CASCADE"`
 	Tokens       []SubwalletToken
 	Snapshots    []Snapshot
 	Address      string

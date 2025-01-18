@@ -15,5 +15,5 @@ type PortfolioMetric struct {
 	MetricName   string     `gorm:"not null"`
 	MetricValue  float64    `gorm:"not null;type:numeric"`
 	CalculatedAt time.Time  `gorm:"not null;default:now()"`
-	User         User       `gorm:"foreignKey:UserID"`
+	User         User       `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
 }
