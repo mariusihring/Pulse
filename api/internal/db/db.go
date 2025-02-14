@@ -79,49 +79,7 @@ func InitDB(cfg *config.Config) *gorm.DB {
 }
 
 func autoMigrate(db *gorm.DB) error {
-	// Create the trigger function
-	db.Exec(`
-        CREATE OR REPLACE FUNCTION public.handle_new_user()
-        RETURNS TRIGGER AS $$
-        DECLARE
-            default_role_id uuid;
-        BEGIN
-            -- Get the default USER role ID
-            SELECT id INTO default_role_id FROM public.roles WHERE name = 'USER';
-            
-            -- Insert into public.users
-            INSERT INTO public.users (
-                id, 
-                name, 
-                email,
-                created_at,
-                updated_at
-            ) VALUES (
-                NEW.id,
-                COALESCE(NEW.raw_user_meta_data->>'name', NEW.email),
-                NEW.email,
-                NEW.created_at,
-                NEW.updated_at
-            );
-
-            -- Insert default role
-            INSERT INTO public.user_roles (user_id, role_id)
-            VALUES (NEW.id, default_role_id);
-
-            RETURN NEW;
-        END;
-        $$ LANGUAGE plpgsql SECURITY DEFINER;
-    `)
-
-	// Create the trigger
-	db.Exec(`
-        DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-        CREATE TRIGGER on_auth_user_created
-            AFTER INSERT ON auth.users
-            FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-    `)
-
-	return db.AutoMigrate(
+	db.AutoMigrate(
 		&models.User{},
 		&models.Role{},
 		&models.Chain{},
@@ -137,6 +95,71 @@ func autoMigrate(db *gorm.DB) error {
 		&models.Alert{},           // depends on User and Token
 		&models.PortfolioMetric{}, // depends on User
 	)
+	// Step 5: Create or replace the function to handle new user signups
+	// props: {"title": "Create Trigger for Users Table", "runQuery": "false", "isChart": "false"}
+
+	// Step 1: Create or replace the function to handle new user signups
+	db.Exec(`
+    CREATE OR REPLACE FUNCTION public.handle_new_user()
+    RETURNS trigger 
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+        default_role_id uuid;
+    BEGIN
+        RAISE NOTICE 'New user created with ID: %', NEW.id;
+
+        -- Get the default USER role ID
+        SELECT id INTO default_role_id FROM public.roles WHERE name = 'USER';
+        RAISE NOTICE 'Default role ID: %', default_role_id;
+
+        -- Check if default_role_id is NULL
+        IF default_role_id IS NULL THEN
+            RAISE EXCEPTION 'Default role ID not found for USER role';
+        END IF;
+
+        -- Insert into public.users
+        INSERT INTO public.users (
+            id, 
+            email,
+            created_at,
+            updated_at
+        ) VALUES (
+            NEW.id,
+            NEW.email,
+            NEW.created_at,
+            NEW.updated_at
+        );
+
+        -- Insert default role
+        INSERT INTO public.user_roles (user_id, role_id)
+        VALUES (NEW.id, default_role_id);
+
+        RETURN NEW;
+    END;
+    $$;
+`)
+
+	// Step 2: Drop the trigger if it exists
+	db.Exec(`
+    DROP TRIGGER IF EXISTS on_user_created ON auth.users;
+`)
+
+	// Step 3: Create the trigger for new user signups
+	db.Exec(`
+    CREATE TRIGGER on_user_created
+        AFTER INSERT ON auth.users
+        FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+`)
+
+	db.Exec(`
+GRANT SELECT ON public.roles TO supabase_auth_admin;
+`)
+
+	db.Exec(`
+GRANT INSERT, UPDATE, DELETE ON public.roles TO supabase_auth_admin;
+`)
+	return nil
 }
 
 func seedRoles(db *gorm.DB) error {

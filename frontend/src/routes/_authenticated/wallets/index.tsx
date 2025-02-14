@@ -23,7 +23,7 @@ const WALLET_DASHBOARD_QUERY = graphql(`
               createdAt
               updatedAt
               name
-              
+              currentValue 
               tokens {
                   amount
                   valueUsd
@@ -41,6 +41,7 @@ const WALLET_DASHBOARD_QUERY = graphql(`
           id
           updatedAt
           name
+          totalBalance
       }
 }`);
 

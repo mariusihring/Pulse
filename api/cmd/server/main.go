@@ -39,8 +39,8 @@ func main() {
 	router.Use(middleware.SetHeader("Access-Control-Allow-Headers", "Content-Type, Authorization"))
 
 	// Create Loaders
-	solana_loader := loaders.NewSolanaLoader(cfg)
 
+	solana_loader := loaders.NewSolanaLoader(cfg, database)
 	// Create Services
 
 	wallet_service := services.NewWalletService(database, solana_loader)

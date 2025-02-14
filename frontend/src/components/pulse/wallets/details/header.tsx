@@ -47,7 +47,7 @@ export default function WalletHeader({ wallet }: { wallet: Wallet }) {
           <p className="text-sm text-muted-foreground">Total Balance</p>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold">
-              $1.000.000
+				{wallet.totalBalance.toFixed(2) ?? 0} $
             </span>
             <span className="text-lg text-muted-foreground">
               69 BTC

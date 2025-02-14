@@ -37,10 +37,15 @@ export default function WalletList({ wallets }: { wallets: Wallet[] }) {
                 </div>
               </TableCell>
               <TableCell>
-                {wallet.balance} {wallet.currency}
+                Holdings go here
               </TableCell>
-              <TableCell className="font-medium">0</TableCell>
-              <TableCell>{wallet.subwallets.length}</TableCell>
+              <TableCell className="font-medium">
+
+                {wallet.totalBalance.toFixed(2)} {wallet.currency ?? "$"}
+              </TableCell>
+              <TableCell>
+                0
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
                   <div className="w-24 h-8">

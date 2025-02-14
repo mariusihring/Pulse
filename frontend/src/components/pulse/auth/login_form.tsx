@@ -17,22 +17,21 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const {signIn} = useAuth()
-  const [email, SetEmail] = useState(undefined)
-  const [pwd, SetPwd] = useState(undefined)
-  const navigate = useNavigate()
+  const { signIn, signUp } = useAuth();
+  const [email, SetEmail] = useState(undefined);
+  const [pwd, SetPwd] = useState(undefined);
+  const navigate = useNavigate();
 
   const handleLogin = async (e: FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     try {
-      await signIn(email, pwd)
-      navigate({to: "/dashboard"})
+      await signUp(email, pwd);
+      navigate({ to: "/dashboard" });
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
-    
-  }
+  };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -92,7 +91,13 @@ export function LoginForm({
                       Forgot your password?
                     </a>
                   </div>
-                  <Input id="password" type="password" required value={pwd} onChange={(e) => SetPwd(e.target.value)}/>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={pwd}
+                    onChange={(e) => SetPwd(e.target.value)}
+                  />
                 </div>
                 <Button type="button" onClick={handleLogin} className="w-full">
                   Login

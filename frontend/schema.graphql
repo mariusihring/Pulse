@@ -105,7 +105,7 @@ type Query {
   transactionCategories: [TransactionCategory!]!
   transactions: [Transaction!]!
   wallet(id: UUID!): Wallet!
-  wallets: [Wallet!]!
+  wallets: [Wallet]!
 }
 
 input RegisterInput {
@@ -135,10 +135,11 @@ type Subwallet {
   address: String!
   chain: Chain!
   createdAt: Time!
+  currentValue: Float!
   id: UUID!
   name: String!
-  snapshots: [Snapshot!]!
-  tokens: [SubwalletToken!]!
+  snapshots: [Snapshot]!
+  tokens: [SubwalletToken]!
   updatedAt: Time!
 }
 
@@ -209,7 +210,8 @@ type Wallet {
   createdAt: Time!
   id: UUID!
   name: String!
-  subwallets: [Subwallet!]!
+  subwallets: [Subwallet]!
+  totalBalance: Float!
   updatedAt: Time!
 }
 

@@ -174,11 +174,12 @@ type User struct {
 }
 
 type Wallet struct {
-	ID         uuid.UUID    `json:"id"`
-	CreatedAt  time.Time    `json:"createdAt"`
-	UpdatedAt  time.Time    `json:"updatedAt"`
-	Name       string       `json:"name"`
-	Subwallets []*Subwallet `json:"subwallets"`
+	ID           uuid.UUID    `json:"id"`
+	CreatedAt    time.Time    `json:"createdAt"`
+	UpdatedAt    time.Time    `json:"updatedAt"`
+	Name         string       `json:"name"`
+	Subwallets   []*Subwallet `json:"subwallets"`
+	TotalBalance float64      `json:"totalBalance"`
 }
 
 type CreateSubwalletInput struct {

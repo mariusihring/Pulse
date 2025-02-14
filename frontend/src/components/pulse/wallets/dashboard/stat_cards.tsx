@@ -6,13 +6,13 @@ import {
   WalletIcon,
 } from "lucide-react";
 import type { Subwallet, Wallet } from "@/graphql/graphql";
+import { useEffect } from "react";
 
 export default function StatsCards({ wallets }: { wallets: Wallet[] }) {
-  const totalBalance = 1000000;
-  //wallets.reduce(
-  //  (sum, wallet) => sum + (wallet.usdBalance ?? 0),
-  //  0,
-  //);
+  let totalBalance = wallets.reduce(
+    (sum, wallet) => sum + (wallet.totalBalance ?? 0),
+    0,
+  );
   const totalTransactions = 69420
   // wallets.reduce(
   //   (sum, wallet) => sum + wallet.subwallets.length,

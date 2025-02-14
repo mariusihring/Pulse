@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package wallet;
+
+option go_package = "./generated";
+
+// The WalletService defines one RPC that returns wallet info.
+service WalletService {
+  rpc GetWalletInfo (WalletRequest) returns (WalletResponse);
+}
+
+message WalletRequest {
+  string wallet_address = 1;
+}
+
+message Token {
+  string token_symbol = 1;
+  string token_address = 2;
+  double token_balance = 3;
+  double usd_balance = 4;
+  double current_price = 5;
+  double total_entry =  6;
+  double pnl = 7;
+  repeated Transaction transactions = 8;
+  repeated TokenHistoryPrice history_prices = 9;
+}
+
+message TokenHistoryPrice {
+  string address = 1;
+  int64 unix_time = 2;
+  double price = 3;
+
+}
+
+message Transaction {
+  string signature = 1;
+  string type = 2;
+  double amount = 3;
+  double usd_price_at_buy = 4;
+  int64 timestamp = 5;
+}
+
+message TokenInfo {
+
+}
+
+message WalletResponse {
+  repeated Token tokens = 1;
+  float wallet_total_balance = 2;
+  float wallet_total_pnl = 3;
+}

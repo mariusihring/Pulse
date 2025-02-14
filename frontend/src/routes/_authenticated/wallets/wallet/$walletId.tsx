@@ -34,6 +34,7 @@ const WALLET_DETAIL_QUERY = graphql(`
           id
           updatedAt
           name
+          totalBalance
       }
       }
     
@@ -67,7 +68,6 @@ function RouteComponent() {
 		queryFn: () => execute(WALLET_DETAIL_QUERY, {id: walletId}),
 		initialData: Route.useLoaderData(),
 	});
-  
   return (
     <div className='flex min-h-screen flex-col bg-background'>
       <div className='container py-8'>

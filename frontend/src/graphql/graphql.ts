@@ -160,7 +160,7 @@ export type Query = {
   transactionCategories: Array<TransactionCategory>;
   transactions: Array<Transaction>;
   wallet: Wallet;
-  wallets: Array<Wallet>;
+  wallets: Array<Maybe<Wallet>>;
 };
 
 
@@ -226,10 +226,11 @@ export type Subwallet = {
   address: Scalars['String']['output'];
   chain: Chain;
   createdAt: Scalars['Time']['output'];
+  currentValue: Scalars['Float']['output'];
   id: Scalars['UUID']['output'];
   name: Scalars['String']['output'];
-  snapshots: Array<Snapshot>;
-  tokens: Array<SubwalletToken>;
+  snapshots: Array<Maybe<Snapshot>>;
+  tokens: Array<Maybe<SubwalletToken>>;
   updatedAt: Scalars['Time']['output'];
 };
 
@@ -303,7 +304,8 @@ export type Wallet = {
   createdAt: Scalars['Time']['output'];
   id: Scalars['UUID']['output'];
   name: Scalars['String']['output'];
-  subwallets: Array<Subwallet>;
+  subwallets: Array<Maybe<Subwallet>>;
+  totalBalance: Scalars['Float']['output'];
   updatedAt: Scalars['Time']['output'];
 };
 
@@ -321,14 +323,14 @@ export type CreateWalletInput = {
 export type WalletsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any }>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any }> }> }> };
+export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, totalBalance: number, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, currentValue: number, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any } | null>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any } | null> } | null> } | null> };
 
 export type WalletDetailQueryQueryVariables = Exact<{
   id: Scalars['UUID']['input'];
 }>;
 
 
-export type WalletDetailQueryQuery = { __typename?: 'Query', wallet: { __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any }>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any }> }> } };
+export type WalletDetailQueryQuery = { __typename?: 'Query', wallet: { __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, totalBalance: number, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any } | null>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any } | null> } | null> } };
 
 export class TypedDocumentString<TResult, TVariables>
   extends String
@@ -353,6 +355,7 @@ export const WalletsDocument = new TypedDocumentString(`
       createdAt
       updatedAt
       name
+      currentValue
       tokens {
         amount
         valueUsd
@@ -370,6 +373,7 @@ export const WalletsDocument = new TypedDocumentString(`
     id
     updatedAt
     name
+    totalBalance
   }
 }
     `) as unknown as TypedDocumentString<WalletsQuery, WalletsQueryVariables>;
@@ -398,6 +402,7 @@ export const WalletDetailQueryDocument = new TypedDocumentString(`
     id
     updatedAt
     name
+    totalBalance
   }
 }
     `) as unknown as TypedDocumentString<WalletDetailQueryQuery, WalletDetailQueryQueryVariables>;
@@ -554,7 +559,7 @@ export type Query = {
   transactionCategories: Array<TransactionCategory>;
   transactions: Array<Transaction>;
   wallet: Wallet;
-  wallets: Array<Wallet>;
+  wallets: Array<Maybe<Wallet>>;
 };
 
 
@@ -620,10 +625,11 @@ export type Subwallet = {
   address: Scalars['String']['output'];
   chain: Chain;
   createdAt: Scalars['Time']['output'];
+  currentValue: Scalars['Float']['output'];
   id: Scalars['UUID']['output'];
   name: Scalars['String']['output'];
-  snapshots: Array<Snapshot>;
-  tokens: Array<SubwalletToken>;
+  snapshots: Array<Maybe<Snapshot>>;
+  tokens: Array<Maybe<SubwalletToken>>;
   updatedAt: Scalars['Time']['output'];
 };
 
@@ -697,7 +703,8 @@ export type Wallet = {
   createdAt: Scalars['Time']['output'];
   id: Scalars['UUID']['output'];
   name: Scalars['String']['output'];
-  subwallets: Array<Subwallet>;
+  subwallets: Array<Maybe<Subwallet>>;
+  totalBalance: Scalars['Float']['output'];
   updatedAt: Scalars['Time']['output'];
 };
 
@@ -715,11 +722,11 @@ export type CreateWalletInput = {
 export type WalletsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any }>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any }> }> }> };
+export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, totalBalance: number, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, currentValue: number, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any } | null>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any } | null> } | null> } | null> };
 
 export type WalletDetailQueryQueryVariables = Exact<{
   id: Scalars['UUID']['input'];
 }>;
 
 
-export type WalletDetailQueryQuery = { __typename?: 'Query', wallet: { __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any }>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any }> }> } };
+export type WalletDetailQueryQuery = { __typename?: 'Query', wallet: { __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, totalBalance: number, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any } | null>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any } | null> } | null> } };

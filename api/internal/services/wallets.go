@@ -13,6 +13,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type WalletService struct {
@@ -46,16 +47,19 @@ func toGQLWallet(w *models.Wallet) *graphql_model.Wallet {
 
 	// Convert subwallets if they exist
 	subwallets := make([]*graphql_model.Subwallet, len(w.Subwallets))
+	totalBalance := float64(0)
 	for i, s := range w.Subwallets {
+		totalBalance += s.CurrentValue
 		subwallets[i] = toGQLSubwallet(&s)
 	}
 
 	return &graphql_model.Wallet{
-		ID:         w.ID,
-		CreatedAt:  w.CreatedAt,
-		UpdatedAt:  w.UpdatedAt,
-		Name:       w.Name,
-		Subwallets: subwallets,
+		ID:           w.ID,
+		CreatedAt:    w.CreatedAt,
+		UpdatedAt:    w.UpdatedAt,
+		Name:         w.Name,
+		Subwallets:   subwallets,
+		TotalBalance: totalBalance,
 	}
 }
 
@@ -339,7 +343,7 @@ func (s *WalletService) CreateSubwallet(ctx context.Context, input *graphql_mode
 		}
 	*/
 	// Reload the subwallet with chain
-	if err := s.db.Preload("Chain").First(subwallet, "id = ?", subwallet.ID).Error; err != nil {
+	if err := s.db.Preload(clause.Associations).First(subwallet, "id = ?", subwallet.ID).Error; err != nil {
 		return nil, fmt.Errorf("failed to reload subwallet: %w", err)
 	}
 

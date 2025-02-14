@@ -216,11 +216,12 @@ type ComplexityRoot struct {
 	}
 
 	Wallet struct {
-		CreatedAt  func(childComplexity int) int
-		ID         func(childComplexity int) int
-		Name       func(childComplexity int) int
-		Subwallets func(childComplexity int) int
-		UpdatedAt  func(childComplexity int) int
+		CreatedAt    func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Name         func(childComplexity int) int
+		Subwallets   func(childComplexity int) int
+		TotalBalance func(childComplexity int) int
+		UpdatedAt    func(childComplexity int) int
 	}
 }
 
@@ -1167,6 +1168,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Wallet.Subwallets(childComplexity), true
 
+	case "Wallet.totalBalance":
+		if e.complexity.Wallet.TotalBalance == nil {
+			break
+		}
+
+		return e.complexity.Wallet.TotalBalance(childComplexity), true
+
 	case "Wallet.updatedAt":
 		if e.complexity.Wallet.UpdatedAt == nil {
 			break
@@ -1498,6 +1506,7 @@ type Query {
   updatedAt: Time!
   name: String!
   subwallets: [Subwallet]!
+  totalBalance: Float!
 }
 
 type Subwallet {
@@ -3674,6 +3683,8 @@ func (ec *executionContext) fieldContext_Mutation_createWallet(ctx context.Conte
 				return ec.fieldContext_Wallet_name(ctx, field)
 			case "subwallets":
 				return ec.fieldContext_Wallet_subwallets(ctx, field)
+			case "totalBalance":
+				return ec.fieldContext_Wallet_totalBalance(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Wallet", field.Name)
 		},
@@ -5422,6 +5433,8 @@ func (ec *executionContext) fieldContext_Query_wallets(_ context.Context, field 
 				return ec.fieldContext_Wallet_name(ctx, field)
 			case "subwallets":
 				return ec.fieldContext_Wallet_subwallets(ctx, field)
+			case "totalBalance":
+				return ec.fieldContext_Wallet_totalBalance(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Wallet", field.Name)
 		},
@@ -5500,6 +5513,8 @@ func (ec *executionContext) fieldContext_Query_wallet(ctx context.Context, field
 				return ec.fieldContext_Wallet_name(ctx, field)
 			case "subwallets":
 				return ec.fieldContext_Wallet_subwallets(ctx, field)
+			case "totalBalance":
+				return ec.fieldContext_Wallet_totalBalance(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Wallet", field.Name)
 		},
@@ -8469,6 +8484,8 @@ func (ec *executionContext) fieldContext_User_wallets(_ context.Context, field g
 				return ec.fieldContext_Wallet_name(ctx, field)
 			case "subwallets":
 				return ec.fieldContext_Wallet_subwallets(ctx, field)
+			case "totalBalance":
+				return ec.fieldContext_Wallet_totalBalance(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Wallet", field.Name)
 		},
@@ -8885,6 +8902,50 @@ func (ec *executionContext) fieldContext_Wallet_subwallets(_ context.Context, fi
 				return ec.fieldContext_Subwallet_currentValue(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Subwallet", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Wallet_totalBalance(ctx context.Context, field graphql.CollectedField, obj *graphql_model.Wallet) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Wallet_totalBalance(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalBalance, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Wallet_totalBalance(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Wallet",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -12376,6 +12437,11 @@ func (ec *executionContext) _Wallet(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "subwallets":
 			out.Values[i] = ec._Wallet_subwallets(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "totalBalance":
+			out.Values[i] = ec._Wallet_totalBalance(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

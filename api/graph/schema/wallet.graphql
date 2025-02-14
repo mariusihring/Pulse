@@ -4,6 +4,7 @@ type Wallet {
   updatedAt: Time!
   name: String!
   subwallets: [Subwallet]!
+  totalBalance: Float!
 }
 
 type Subwallet {
