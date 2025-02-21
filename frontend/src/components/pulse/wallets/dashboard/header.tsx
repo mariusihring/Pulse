@@ -7,7 +7,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { graphql } from "@/graphql";
 import { RefreshCw, Plus, Wallet } from "lucide-react";
+const ADD_WALLET_MUTATION = graphql(`
+    mutation createWallet($input createWalletInput!) {
+    createWallet(input: $input) {
+    id
+    }
+    }
+  `)
 
 export default function DashboardHeader() {
   return (
@@ -40,7 +48,7 @@ export default function DashboardHeader() {
             <Plus className="h-4 w-4 mr-2" />
             Add Transaction
           </Button> */}
-          <Button>
+          <Button onClick={() => alert("test")}>
             <Wallet className="h-4 w-4 mr-2" />
             Add Wallet
           </Button>

@@ -15,6 +15,14 @@ TODO:
 
 */
 
+const ADD_WALLET_MUTATION = graphql(`
+    mutation createWallet($input createWalletInput!) {
+    createWallet(input: $input) {
+    id
+    }
+    }
+  `)
+
 const WALLET_DASHBOARD_QUERY = graphql(`
   query Wallets {
       wallets {

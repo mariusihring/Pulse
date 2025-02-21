@@ -320,11 +320,6 @@ export type CreateWalletInput = {
   name: Scalars['String']['input'];
 };
 
-export type WalletsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, totalBalance: number, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, currentValue: number, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any } | null>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any } | null> } | null> } | null> };
-
 export type WalletDetailQueryQueryVariables = Exact<{
   id: Scalars['UUID']['input'];
 }>;
@@ -347,36 +342,6 @@ export class TypedDocumentString<TResult, TVariables>
   }
 }
 
-export const WalletsDocument = new TypedDocumentString(`
-    query Wallets {
-  wallets {
-    subwallets {
-      id
-      createdAt
-      updatedAt
-      name
-      currentValue
-      tokens {
-        amount
-        valueUsd
-        totalPnl
-      }
-      snapshots {
-        snapshotDate
-        totalPnl
-        totalValue
-        id
-        createdAt
-      }
-    }
-    createdAt
-    id
-    updatedAt
-    name
-    totalBalance
-  }
-}
-    `) as unknown as TypedDocumentString<WalletsQuery, WalletsQueryVariables>;
 export const WalletDetailQueryDocument = new TypedDocumentString(`
     query WalletDetailQuery($id: UUID!) {
   wallet(id: $id) {
@@ -718,11 +683,6 @@ export type CreateSubwalletInput = {
 export type CreateWalletInput = {
   name: Scalars['String']['input'];
 };
-
-export type WalletsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type WalletsQuery = { __typename?: 'Query', wallets: Array<{ __typename?: 'Wallet', createdAt: any, id: any, updatedAt: any, name: string, totalBalance: number, subwallets: Array<{ __typename?: 'Subwallet', id: any, createdAt: any, updatedAt: any, name: string, currentValue: number, tokens: Array<{ __typename?: 'SubwalletToken', amount: any, valueUsd: any, totalPnl: any } | null>, snapshots: Array<{ __typename?: 'Snapshot', snapshotDate: any, totalPnl: any, totalValue: any, id: any, createdAt: any } | null> } | null> } | null> };
 
 export type WalletDetailQueryQueryVariables = Exact<{
   id: Scalars['UUID']['input'];

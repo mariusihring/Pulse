@@ -5,46 +5,46 @@ import (
 	"fmt"
 	"net/http"
 	"pulse/internal/auth"
-	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
 	"gorm.io/gorm"
 )
 
-func Auth(jwt *auth.JWT, db *gorm.DB) func(http.Handler) http.Handler {
+func Auth(db *gorm.DB) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			token := r.Header.Get("Authorization")
-			token = strings.TrimPrefix(token, "Bearer ")
+			// token := r.Header.Get("Authorization")
+			// token = strings.TrimPrefix(token, "Bearer ")
 
-			if token == "" {
-				next.ServeHTTP(w, r)
-				return
-			}
+			// if token == "" {
+			// 	next.ServeHTTP(w, r)
+			// 	return
+			// }
 
-			claims, err := jwt.Validate(token)
-			if err != nil {
-				next.ServeHTTP(w, r)
-				return
-			}
+			// claims, err := jwt.Validate(token)
+			// if err != nil {
+			// 	next.ServeHTTP(w, r)
+			// 	return
+			// }
 
-			// Fetch roles from database
-			var roles []string
-			err = db.Table("roles").
-				Joins("JOIN user_roles ON roles.id = user_roles.role_id").
-				Where("user_roles.user_id = ?", claims.UserID).
-				Pluck("roles.name", &roles).Error
+			// // Fetch roles from database
+			// var roles []string
+			// err = db.Table("roles").
+			// 	Joins("JOIN user_roles ON roles.id = user_roles.role_id").
+			// 	Where("user_roles.user_id = ?", claims.UserID).
+			// 	Pluck("roles.name", &roles).Error
 
-			if err != nil {
-				next.ServeHTTP(w, r)
-				return
-			}
+			// if err != nil {
+			// 	next.ServeHTTP(w, r)
+			// 	return
+			// }
 
-			// Add claims to context
-			ctx := context.WithValue(r.Context(), auth.UserIDKey, claims.UserID)
-			ctx = context.WithValue(ctx, auth.RolesKey, roles)
+			// // Add claims to context
+			// ctx := context.WithValue(r.Context(), auth.UserIDKey, claims.UserID)
+			// ctx = context.WithValue(ctx, auth.RolesKey, roles)
 
-			next.ServeHTTP(w, r.WithContext(ctx))
+			// next.ServeHTTP(w, r.WithContext(ctx))
+			next.ServeHTTP(w, r)
 		})
 	}
 }

@@ -32,7 +32,8 @@ func (r *queryResolver) Wallets(ctx context.Context) ([]*graphql_model.Wallet, e
 
 // Wallet is the resolver for the wallet field.
 func (r *queryResolver) Wallet(ctx context.Context, id uuid.UUID) (*graphql_model.Wallet, error) {
-	return r.WalletService.GetWallet(ctx, id)
+	// return r.WalletService.GetWallet(ctx, id)
+	return nil, nil
 }
 
 // Subwallet is the resolver for the subwallet field.

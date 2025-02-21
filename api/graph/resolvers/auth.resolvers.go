@@ -12,12 +12,14 @@ import (
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, input graphql_model1.LoginInput) (*graphql_model1.AuthResponse, error) {
-	return r.AuthService.Login(ctx, input)
+	// return r.AuthService.Login(ctx, input)
+	return nil, nil
 }
 
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input graphql_model1.RegisterInput) (*graphql_model1.AuthResponse, error) {
-	return r.AuthService.Register(ctx, input)
+
+	return nil, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

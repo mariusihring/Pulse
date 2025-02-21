@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"pulse/internal/config"
 	"pulse/internal/db/models"
 	"time"
 
@@ -15,23 +14,19 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func InitDB(cfg *config.Config) *gorm.DB {
+func InitDB() *gorm.DB {
 	// Build connection string
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=UTC",
-		cfg.Database.Host,
-		cfg.Database.User,
-		cfg.Database.Password,
-		cfg.Database.Name,
-		cfg.Database.Port,
-		cfg.Database.SSLMode,
+		"host=%s user=%s password=%s dbname=%s port=%s TimeZone=UTC",
+		"localhost",
+		"postgres",
+		"root",
+		"pulse",
+		"5432",
 	)
 
 	// Configure GORM logger
 	logLevel := logger.Info
-	if cfg.Environment == "production" {
-		logLevel = logger.Error
-	}
 
 	gormLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags),

@@ -4,9 +4,7 @@ import (
 	"net/http"
 	"pulse/graph/generated"
 	"pulse/graph/resolvers"
-	"pulse/internal/auth"
 	pulse_middleware "pulse/internal/auth/middleware"
-	"pulse/internal/config"
 	"pulse/internal/db"
 	"pulse/internal/services"
 	"pulse/internal/services/loaders"
@@ -24,10 +22,8 @@ import (
 const defaultPort = "8080"
 
 func main() {
-	cfg := config.Load()
 
-	jwtAuth := auth.New(cfg)
-	database := db.InitDB(cfg)
+	database := db.InitDB()
 
 	router := chi.NewRouter()
 
@@ -40,14 +36,13 @@ func main() {
 
 	// Create Loaders
 
-	solana_loader := loaders.NewSolanaLoader(cfg, database)
+	solana_loader := loaders.NewSolanaLoader(database)
 	// Create Services
 
 	wallet_service := services.NewWalletService(database, solana_loader)
 
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{
 		Resolvers: &resolvers.Resolver{
-			AuthService:   services.NewAuthService(database, jwtAuth),
 			WalletService: wallet_service,
 		},
 		Directives: generated.DirectiveRoot{
@@ -61,7 +56,7 @@ func main() {
 	srv.Use(extension.Introspection{})
 
 	router.Handle("/", playground.Handler("Pulse", "/query"))
-	router.Handle("/query", pulse_middleware.Auth(jwtAuth, database)(srv))
+	router.Handle("/query", pulse_middleware.Auth(database)(srv))
 
 	/*
 		router.Options("/*", func(w http.ResponseWriter, r *http.Request) {
@@ -69,6 +64,6 @@ func main() {
 		})
 	*/
 
-	log.Infof("Connect to http://localhost:%s/ for Graphql Playground", cfg.Server.Port)
-	log.Fatal(http.ListenAndServe(cfg.Server.Host+":"+cfg.Server.Port, router))
+	// log.Infof("Connect to http://localhost:%s/ for Graphql Playground", cfg.Server.Port)
+	log.Fatal(http.ListenAndServe(":3001", router))
 }
