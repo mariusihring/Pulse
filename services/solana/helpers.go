@@ -143,7 +143,7 @@ func GetTokenPrice(mint string) (float64, error) {
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("x-chain", "solana")
-	req.Header.Add("X-API-KEY", "")
+	req.Header.Add("X-API-KEY", "e18b4bd710814fbb9580596543952f5b")
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {

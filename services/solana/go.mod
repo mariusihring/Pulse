@@ -4,6 +4,7 @@ go 1.23.6
 
 require (
 	github.com/charmbracelet/log v0.4.0
+	github.com/mr-tron/base58 v1.2.0
 	google.golang.org/grpc v1.70.0
 	google.golang.org/protobuf v1.36.5
 )

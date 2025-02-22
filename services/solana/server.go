@@ -1,81 +1,134 @@
 package main
 
 import (
-	"context"
-	"github.com/charmbracelet/log"
+	"errors"
+	"math/rand"
 	"net"
+	"time"
+
+	"solana/requests"
+
+	"github.com/charmbracelet/log"
+	"github.com/mr-tron/base58"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "solana/generated"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
+// validateSolanaAddress checks if the given address is a valid Solana address
+func validateSolanaAddress(address string) error {
+	// Check if the address is a valid base58 string
+	decodedAddr, err := base58.Decode(address)
+	if err != nil {
+		return errors.New("invalid base58 string")
+	}
+
+	// Solana addresses are 32 bytes long
+	if len(decodedAddr) != 32 {
+		return errors.New("invalid address length - must be 32 bytes when decoded")
+	}
+
+	return nil
+}
 
 type server struct {
 	pb.UnimplementedWalletServiceServer
 }
 
 // GetWalletInfo is the main gRPC method that performs all operations.
-func (s *server) GetWalletInfo(ctx context.Context, req *pb.WalletRequest) (*pb.WalletResponse, error) {
-	walletAddr := req.WalletAddress
-	var tokens []*pb.Token
-	totalValue := 0.0
-	log.Infof("GetWalletInfo: %v", walletAddr)
-	solBalance, err := GetBalance(walletAddr)
-	if err != nil {
-		return nil, err
-	}
-	toks, err := GetTokenAccounts(walletAddr)
-	if err != nil {
-		return nil, err
-	}
-	solPrice, err := GetSolPrice()
-	if err != nil {
-		log.Errorf("Error fetching sol price: %v", err)
-		solPrice = 0
-	}
-	solBalanceUsd := solBalance * solPrice
-	totalValue += solBalanceUsd
-	for _, token := range toks {
-		tokenPrice, err := GetTokenPrice(token.Mint)
-		if err != nil {
-			log.Printf("Error fetching price for token mint %s: %v", token.Mint, err)
-			tokenPrice = 0
-		}
-		totalValue += tokenPrice * token.Amount
-		t := &pb.Token{
-			TokenSymbol:   token.TokenAccount,
-			TokenAddress:  token.Mint,
-			TokenBalance:  token.Amount,
-			UsdBalance:    token.Amount * tokenPrice,
-			CurrentPrice:  tokenPrice,
-			TotalEntry:    0,
-			Pnl:           0,
-			Transactions:  nil,
-			HistoryPrices: nil,
-		}
-		tokens = append(tokens, t)
-
+func (s *server) AddWallet(req *pb.WalletRequest, stream pb.WalletService_AddWalletServer) error {
+	// Validate the Solana address
+	if err := validateSolanaAddress(req.WalletAddress); err != nil {
+		return status.Errorf(codes.InvalidArgument, "invalid wallet address: %v", err)
 	}
 
-	solB := &pb.Token{
-		TokenSymbol:   "SOL",
-		TokenAddress:  "So11111111111111111111111111111111111111112",
-		TokenBalance:  solBalance,
-		UsdBalance:    solBalanceUsd,
-		CurrentPrice:  solPrice,
-		TotalEntry:    0,
-		Pnl:           0,
-		Transactions:  nil,
-		HistoryPrices: nil,
+	// Get the base wallet
+	wallet, err := requests.RequestAccountInfo(req.WalletAddress)
+	if err != nil {
+		return status.Errorf(codes.NotFound, "invalid wallet address: %v", err)
 	}
-	tokens = append(tokens, solB)
-	return &pb.WalletResponse{
-		Tokens:             tokens,
-		WalletTotalBalance: float32(totalValue),
-		WalletTotalPnl:     0,
-	}, nil
+
+	//return first response
+
+	// if err := stream.Send(update); err != nil {
+	// 	log.Printf("error sending update: %v", err)
+	// 	return err
+	// }
+	// Get the current solana price
+	solana_price, err := requests.GetSolanaPrice()
+	if err != nil {
+		return status.Errorf(codes.FailedPrecondition, "could not get solana price: %v", err)
+	}
+
+	//return the updated wallet with solana value and amount
+
+	// get the tokens in the wallet
+	accounts, err := requests.RequestTokenAccounts(req.WalletAddress)
+	if err != nil {
+		return status.Errorf(codes.FailedPrecondition, "could not get tokens: %v", err)
+	}
+
+	var addresses []string
+	for _, token := range accounts {
+		addresses = append(addresses, token.Account.Data.Parsed.Info.Mint)
+	}
+	// get the current token prices
+	current_token_prices, err := requests.GetCoinGeckoTokenPrices(addresses)
+	if err != nil {
+		return status.Errorf(codes.FailedPrecondition, "could not get token prices: %v", err)
+	}
+
+	//return the updated wallet with all the tokens
+	var tokens []pb.Token
+	for _, account := range accounts.Result.Value {
+		data := requests.GetTokenMetadata(account.Account.Data.Parsed.Info.Mint)
+		pool, _ := requests.GetTokenPools(account.Account.Data.Parsed.Info.Mint)
+		tokens = append(tokens, pb.Token{
+			Name:        data.Result.Content.Metadata.Name,
+			Address:     account.Account.Data.Parsed.Info.Mint,
+			Pool:        pool,
+			Description: data.Result.Content.Metadata.Description,
+			Image:       data.Result.Content.Metadata.Image,
+			Amount:      account.Account.Data.Parsed.Info.TokenAmount.UIAmount,
+			Price:       current_token_prices[account.Account.Data.Parsed.Info.Mint],
+			Pnl:         0,
+			Invested:    0,
+			Value:       0,
+			HistoryPrices: []float64{
+				0,
+			},
+		})
+
+		// send updated response with the new tokens
+	}
+
+	// get the transactions in the wallet
+	transactions, err := requests.RequestTransactions(req.WalletAddress)
+	if err != nil {
+		return status.Errorf(codes.FailedPrecondition, "could not get transactions: %v", err)
+	}
+
+	//loop over transaction hashes get the transaction info and send updated wallet with the transaction attached
+
+	// get history price data for each token that is in the transactions
+
+	// send updated wallet with history price data
+
+	// calculate pnl for each token
+
+	// send for each calculation a update
+
+	//IMPORTANT: for each update that we do update the wallet value and total pnl along the way
+
+	return nil
 }
-
 func main() {
 	// Listen on port 50051
 	lis, err := net.Listen("tcp", ":50051")

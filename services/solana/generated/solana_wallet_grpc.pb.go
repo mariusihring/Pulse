@@ -19,16 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	WalletService_GetWalletInfo_FullMethodName = "/wallet.WalletService/GetWalletInfo"
+	WalletService_AddWallet_FullMethodName = "/wallet.WalletService/AddWallet"
 )
 
 // WalletServiceClient is the client API for WalletService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// The WalletService defines one RPC that returns wallet info.
+// The service definition including a streaming RPC.
 type WalletServiceClient interface {
-	GetWalletInfo(ctx context.Context, in *WalletRequest, opts ...grpc.CallOption) (*WalletResponse, error)
+	// Streams WalletResponse messages whenever the wallet is updated.
+	AddWallet(ctx context.Context, in *WalletRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WalletResponse], error)
 }
 
 type walletServiceClient struct {
@@ -39,23 +40,33 @@ func NewWalletServiceClient(cc grpc.ClientConnInterface) WalletServiceClient {
 	return &walletServiceClient{cc}
 }
 
-func (c *walletServiceClient) GetWalletInfo(ctx context.Context, in *WalletRequest, opts ...grpc.CallOption) (*WalletResponse, error) {
+func (c *walletServiceClient) AddWallet(ctx context.Context, in *WalletRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WalletResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(WalletResponse)
-	err := c.cc.Invoke(ctx, WalletService_GetWalletInfo_FullMethodName, in, out, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &WalletService_ServiceDesc.Streams[0], WalletService_AddWallet_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &grpc.GenericClientStream[WalletRequest, WalletResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type WalletService_AddWalletClient = grpc.ServerStreamingClient[WalletResponse]
 
 // WalletServiceServer is the server API for WalletService service.
 // All implementations must embed UnimplementedWalletServiceServer
 // for forward compatibility.
 //
-// The WalletService defines one RPC that returns wallet info.
+// The service definition including a streaming RPC.
 type WalletServiceServer interface {
-	GetWalletInfo(context.Context, *WalletRequest) (*WalletResponse, error)
+	// Streams WalletResponse messages whenever the wallet is updated.
+	AddWallet(*WalletRequest, grpc.ServerStreamingServer[WalletResponse]) error
 	mustEmbedUnimplementedWalletServiceServer()
 }
 
@@ -66,8 +77,8 @@ type WalletServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedWalletServiceServer struct{}
 
-func (UnimplementedWalletServiceServer) GetWalletInfo(context.Context, *WalletRequest) (*WalletResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWalletInfo not implemented")
+func (UnimplementedWalletServiceServer) AddWallet(*WalletRequest, grpc.ServerStreamingServer[WalletResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method AddWallet not implemented")
 }
 func (UnimplementedWalletServiceServer) mustEmbedUnimplementedWalletServiceServer() {}
 func (UnimplementedWalletServiceServer) testEmbeddedByValue()                       {}
@@ -90,23 +101,16 @@ func RegisterWalletServiceServer(s grpc.ServiceRegistrar, srv WalletServiceServe
 	s.RegisterService(&WalletService_ServiceDesc, srv)
 }
 
-func _WalletService_GetWalletInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WalletRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _WalletService_AddWallet_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WalletRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(WalletServiceServer).GetWalletInfo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: WalletService_GetWalletInfo_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WalletServiceServer).GetWalletInfo(ctx, req.(*WalletRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(WalletServiceServer).AddWallet(m, &grpc.GenericServerStream[WalletRequest, WalletResponse]{ServerStream: stream})
 }
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type WalletService_AddWalletServer = grpc.ServerStreamingServer[WalletResponse]
 
 // WalletService_ServiceDesc is the grpc.ServiceDesc for WalletService service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -114,12 +118,13 @@ func _WalletService_GetWalletInfo_Handler(srv interface{}, ctx context.Context, 
 var WalletService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "wallet.WalletService",
 	HandlerType: (*WalletServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "GetWalletInfo",
-			Handler:    _WalletService_GetWalletInfo_Handler,
+			StreamName:    "AddWallet",
+			Handler:       _WalletService_AddWallet_Handler,
+			ServerStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/solana_wallet.proto",
 }
