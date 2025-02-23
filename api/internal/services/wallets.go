@@ -3,12 +3,12 @@ package services
 import (
 	"context"
 	"fmt"
-	"pulse/graph/graphql_model"
-	"pulse/internal/db/models"
-	"pulse/internal/services/loaders"
-
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"pulse/graph/graphql_model"
+	"pulse/internal/db/models"
+	solana_grpc "pulse/internal/proto/solana_service/generated"
+	"pulse/internal/services/loaders"
 )
 
 type WalletService struct {
@@ -86,21 +86,8 @@ func toGQLSubwallet(s *models.Subwallet) *graphql_model.Subwallet {
 }
 
 func (s *WalletService) CreateWallet(ctx context.Context, input *graphql_model.CreateWalletInput) (*graphql_model.Wallet, error) {
-	// _ := auth.UserFromContext(ctx)
-	// 	wallet := &models.Wallet{
-	// 		Name:   input.Name,
-	// 		UserID: *userID,
-	// 	}
-
-	// 	if err := s.db.Create(wallet).Error; err != nil {
-	// 		return nil, fmt.Errorf("failed to create wallet: %w", err)
-	// 	}
-
-	// 	// Reload the wallet with all relationships
-	// 	if err := s.db.Preload("Subwallets").Preload("Subwallets.Chain").First(wallet, "id = ?", wallet.ID).Error; err != nil {
-	// 		return nil, fmt.Errorf("failed to reload wallet: %w", err)
-	// 	}
-
+	request := &solana_grpc.WalletRequest{WalletAddress: input.Name}
+	s.loaders.Solana.Client.AddWallet(ctx, request)
 	// 	return toGQLWallet(wallet), nil
 	// }
 

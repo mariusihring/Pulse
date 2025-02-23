@@ -8,11 +8,11 @@ import (
 	"context"
 	"fmt"
 	"pulse/graph/generated"
-	graphql_model1 "pulse/graph/graphql_model"
+	"pulse/graph/graphql_model"
 )
 
 // Me is the resolver for the me field.
-func (r *queryResolver) Me(ctx context.Context) (*graphql_model1.User, error) {
+func (r *queryResolver) Me(ctx context.Context) (*graphql_model.User, error) {
 	panic(fmt.Errorf("not implemented: Me - me"))
 }
 

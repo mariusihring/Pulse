@@ -4,10 +4,7 @@ type User {
   updatedAt: Time!
   name: String!
   email: String!
-  wallets: [Wallet!]!
-  alerts: [Alert!]!
-  roles: [Role!]!
-  metrics: [PortfolioMetric!]!
+
 }
 
 input CreateUserInput {

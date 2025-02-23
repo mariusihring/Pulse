@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"google.golang.org/protobuf/encoding/protojson"
 	"math/rand"
 	"net"
 	"strconv"
@@ -19,7 +20,6 @@ import (
 	pb "solana/generated"
 	coingecko_requests "solana/requests/coingecko"
 	solana_requests "solana/requests/solana"
-	solana_types "solana/types/solana_rpc"
 )
 
 func init() {
@@ -60,15 +60,13 @@ func (s *server) AddWallet(req *pb.WalletRequest, stream pb.WalletService_AddWal
 	if err != nil {
 		return status.Errorf(codes.NotFound, "invalid wallet address: %v", err)
 	}
-	//return first response
-
 	// Get the current solana price
 	solana_price, err := coingecko_requests.GetSolanaPrice()
 	if err != nil {
 		return status.Errorf(codes.FailedPrecondition, "could not get solana price: %v", err)
 	}
 
-	//return the updated wallet with solana value and amount
+	// Return the updated wallet with solana value and amount
 	response.SolBalance = wallet.SolAmount
 	response.SolValue = wallet.SolAmount * solana_price
 	response.WalletValue = wallet.SolAmount * solana_price
@@ -79,7 +77,7 @@ func (s *server) AddWallet(req *pb.WalletRequest, stream pb.WalletService_AddWal
 		return err
 	}
 
-	// get the tokens in the wallet
+	// Get the tokens in the wallet
 	accounts, err := solana_requests.RequestTokenAccounts(req.WalletAddress)
 	if err != nil {
 		return status.Errorf(codes.FailedPrecondition, "could not get tokens: %v", err)
@@ -89,13 +87,13 @@ func (s *server) AddWallet(req *pb.WalletRequest, stream pb.WalletService_AddWal
 	for _, token := range accounts.Result.Value {
 		addresses = append(addresses, token.Account.Data.Parsed.Info.Mint)
 	}
-	// get the current token prices
+	// Get the current token prices
 	current_token_prices, err := coingecko_requests.GetCoinGeckoTokenPrices(addresses)
 	if err != nil {
 		return status.Errorf(codes.FailedPrecondition, "could not get token prices: %v", err)
 	}
 
-	//return the updated wallet with all the tokens
+	// Return the updated wallet with all the tokens
 	var tokens []*pb.Token
 	priceHistories := make(map[string][][]float64)
 	for _, account := range accounts.Result.Value {
@@ -106,7 +104,7 @@ func (s *server) AddWallet(req *pb.WalletRequest, stream pb.WalletService_AddWal
 		priceHistories[account.Account.Data.Parsed.Info.Mint] = prices
 		f, err := strconv.ParseFloat(current_token_prices[account.Account.Data.Parsed.Info.Mint], 64)
 		if err != nil {
-			log.Error("Error occured", "Stack", err)
+			log.Error("Error occurred", "Stack", err)
 			continue
 		}
 		tokens = append(tokens, &pb.Token{
@@ -128,18 +126,18 @@ func (s *server) AddWallet(req *pb.WalletRequest, stream pb.WalletService_AddWal
 		response.WalletValue = response.WalletValue + (account.Account.Data.Parsed.Info.TokenAmount.UIAmount * f)
 		response.LastUpdated = time.Now().UTC().Format(time.RFC3339)
 
-		// send updated response with the new tokens
+		// Send updated response with the new tokens
 		if err := stream.Send(response); err != nil {
 			log.Printf("error sending update: %v", err)
 			return err
 		}
 	}
-	// get hashes for transactions
+
+	// Get hashes for transactions
 	hashes, err := solana_requests.GetTransactionHashes(req.WalletAddress)
 	if err != nil {
 		return status.Errorf(codes.FailedPrecondition, "could not get transactions: %v", err)
 	}
-	// // get the transactions in the wallet
 
 	// Create a queue of signatures.
 	var queue []string
@@ -166,6 +164,7 @@ func (s *server) AddWallet(req *pb.WalletRequest, stream pb.WalletService_AddWal
 		// Attempt to fetch the transaction data.
 		result, err := solana_requests.QueryRPCWithRetry("getTransaction", params)
 		if err != nil {
+
 			// If the error contains a retry delay, parse it.
 			var delaySeconds int
 			if n, _ := fmt.Sscanf(err.Error(), "retry after %d seconds", &delaySeconds); n == 1 {
@@ -181,10 +180,25 @@ func (s *server) AddWallet(req *pb.WalletRequest, stream pb.WalletService_AddWal
 			continue
 		}
 
-		var txResponse solana_types.TransactionResponse
-		if err = json.Unmarshal([]byte(result), &txResponse); err != nil {
+		// Pre-check the JSON response for an error field.
+		var tmp map[string]interface{}
+		if err = json.Unmarshal([]byte(result), &tmp); err != nil {
+			log.Error("Error checking JSON for error field", "signature", signature, "error", err)
+			queue = append(queue, signature)
+			continue
+		}
+		if _, found := tmp["err"]; found {
+			log.Error("RPC returned an error in response", "signature", signature, "response", tmp["err"])
+			queue = append(queue, signature)
+			continue
+		}
+
+		var txResponse pb.Transaction
+		opts := protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		}
+		if err = opts.Unmarshal([]byte(result), &txResponse); err != nil {
 			log.Error("Error unmarshalling transaction", "signature", signature, "Stack", err)
-			// Optionally requeue for another attempt.
 			queue = append(queue, signature)
 			continue
 		}
@@ -193,39 +207,22 @@ func (s *server) AddWallet(req *pb.WalletRequest, stream pb.WalletService_AddWal
 		response.Transactions = transactions
 		response.LastUpdated = time.Now().UTC().Format(time.RFC3339)
 
-		// send updated response with the new tokens
+		// Send updated response with the new transactions
 		if err := stream.Send(response); err != nil {
 			log.Printf("error sending update: %v", err)
-			return err
 		}
 	}
 
-	// transactions, err := solana_requests.GetTransactions(hashes, stream)
-	// if err != nil {
-	// 	return status.Errorf(codes.FailedPrecondition, "could not get transactions: %v", err)
-	// }
+	// Additional steps (history price data, pnl calculations, etc.) can be added here.
 
-	// log.Info(transactions)
-
-	//loop over transaction hashes get the transaction info and send updated wallet with the transaction attached
-
-	// get history price data for each token that is in the transactions
-
-	// send updated wallet with history price data
-
-	// calculate pnl for each token
-
-	// send for each calculation a update
-
-	//IMPORTANT: for each update that we do update the wallet value and total pnl along the way
-
-	// send final update
+	// Send final update
 	if err := stream.Send(response); err != nil {
 		log.Printf("error sending update: %v", err)
 		return err
 	}
 	return nil
 }
+
 func main() {
 	// Listen on port 50051
 	lis, err := net.Listen("tcp", ":50051")

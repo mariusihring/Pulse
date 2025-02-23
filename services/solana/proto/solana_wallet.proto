@@ -44,11 +44,14 @@ message Token {
 // A transaction container.
 message Transaction {
   string jsonrpc = 1;
-  oneof payload {
-    TransactionResult result = 2;
-    string error = 3;
-  }
+  optional TransactionResult result = 2;
+  optional Error err = 3;
   int32 id = 4;
+}
+
+message Error {
+  int32 code = 1;
+  string message = 2;
 }
 
 // The detailed transaction result.
@@ -57,7 +60,6 @@ message TransactionResult {
   Meta meta = 2;
   uint64 slot = 3;
   TransactionData transaction = 4;
-  string version = 5;
 }
 
 // Meta data for a transaction.
@@ -146,7 +148,6 @@ message Instruction {
   repeated uint32 accounts = 1;
   string data = 2;
   uint32 program_id_index = 3;
-  // stack_height is optional.
   uint32 stack_height = 4;
 }
 

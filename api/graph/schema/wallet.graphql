@@ -1,42 +1,128 @@
+# GraphQL schema fragment for wallet response subscription
+
+type Subscription {
+  # The walletUpdates subscription accepts a walletAddress argument
+  walletUpdates(walletAddress: String!): Wallet!
+}
+
 type Wallet {
-  id: UUID!
-  createdAt: Time!
-  updatedAt: Time!
-  name: String!
-  subwallets: [Subwallet]!
-  totalBalance: Float!
-}
-
-type Subwallet {
-  id: UUID!
-  createdAt: Time!
-  updatedAt: Time!
-  name: String!
-  chain: Chain!
-  tokens: [SubwalletToken]!
-  snapshots: [Snapshot]!
   address: String!
-  currentValue: Float!
+  sol_balance: Float!
+  sol_value: Float!
+  wallet_value: Float!
+  tokens: [Token!]!
+  transactions: [Transaction!]!
+  last_updated: String!
 }
 
-input createWalletInput {
+type Token {
   name: String!
-}
-
-input createSubwalletInput {
-  name: String!
-  walletId: UUID!
-  chainId: UUID!
   address: String!
+  pool: String!
+  description: String!
+  image: String!
+  amount: Float!
+  price: Float!
+  pnl: Float!
+  invested: Float!
+  value: Float!
+  history_prices: [Float!]!
 }
 
-extend type Query {
-  wallets: [Wallet]! @auth
-  wallet(id: UUID!): Wallet! @auth
-  subwallet(id: UUID!): Subwallet! @auth
+type Transaction {
+  jsonrpc: String!
+  result: TransactionResult
+  err: Error
+  id: Int!
 }
 
-extend type Mutation {
-  createWallet(input: createWalletInput!): Wallet! @auth
-  createSubwallet(input: createSubwalletInput!): Subwallet! @auth
+type Error {
+  code: Int!
+  message: String!
+}
+
+type TransactionResult {
+  block_time: Int!          # int64 block_time; adjust as needed (e.g. as a custom scalar)
+  meta: Meta!
+  slot: Int!                # uint64 slot
+  transaction: TransactionData!
+}
+
+type Meta {
+  compute_units_consumed: Int!   # uint64
+  fee: Int!                      # uint64
+  inner_instructions: [InnerInstruction!]!
+  log_messages: [String!]!
+  post_balances: [Int!]!          # repeated uint64
+  pre_balances: [Int!]!
+  post_token_balances: [TokenBalance!]!
+  pre_token_balances: [TokenBalance!]!
+  rewards: [Reward!]!
+  status: Status!
+}
+
+type InnerInstruction {
+  index: Int!
+  instructions: [Instruction!]!
+}
+
+type TokenBalance {
+  account_index: Int!
+  mint: String!
+  owner: String!
+  program_id: String!
+  ui_token_amount: TokenAmount!
+}
+
+type TokenAmount {
+  amount: String!
+  decimals: Int!
+  ui_amount: Float!
+  ui_amount_string: String!
+}
+
+type Reward {
+  info: String!
+}
+
+type Status {
+  # Using an optional field approach: only one of these fields would be set.
+  ok: String
+  error_message: String
+}
+
+type TransactionData {
+  message: TransactionMessage!
+  signatures: [String!]!
+}
+
+type TransactionMessage {
+  account_keys: [String!]!
+  address_table_lookups: [AddressTableLookup!]!
+  header: MessageHeader!
+  instructions: [Instruction!]!
+  recent_blockhash: String!
+}
+
+type AddressTableLookup {
+  account_key: String!
+  readonly_indexes: [Int!]!
+  writable_indexes: [Int!]!
+}
+
+type MessageHeader {
+  num_readonly_signed_accounts: Int!
+  num_readonly_unsigned_accounts: Int!
+  num_required_signatures: Int!
+}
+
+type Instruction {
+  accounts: [Int!]!
+  data: String!
+  program_id_index: Int!
+  stack_height: Int!
+}
+
+type StatusMessage {
+  status: String!
 }
