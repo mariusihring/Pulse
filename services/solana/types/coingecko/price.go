@@ -1,6 +1,6 @@
-package types
+package coingecko_types
 
-type CoinGeckoPriceResponse struct {
+type PriceResponse struct {
 	Data TokenPriceData `json:"data"`
 }
 

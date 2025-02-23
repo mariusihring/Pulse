@@ -1,13 +1,12 @@
-package requests
+package coingecko_requests
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	coingecko_types "solana/types/coingecko"
 	"strings"
-
-	"solana/types"
 
 	"github.com/charmbracelet/log"
 )
@@ -53,7 +52,7 @@ func GetCoinGeckoTokenPrices(addresses []string) (map[string]string, error) {
 		log.Error("Error occured", "Stack", err)
 		return nil, fmt.Errorf("failed to read token prices response: %w", err)
 	}
-	var response types.CoinGeckoPriceResponse
+	var response coingecko_types.PriceResponse
 	err = json.Unmarshal([]byte(body), &response)
 	if err != nil {
 		log.Error("Error occured", "Stack", err)

@@ -1,4 +1,4 @@
-package requests
+package solana_requests
 
 import (
 	"bytes"
@@ -39,7 +39,7 @@ func queryRPC(method string, params []interface{}) (string, error) {
 
 	return prettyJSON.String(), nil
 }
-func queryRPCWithRetry(method string, params []interface{}) (string, error) {
+func QueryRPCWithRetry(method string, params []interface{}) (string, error) {
 	requestPayload := map[string]interface{}{
 		"jsonrpc": "2.0",
 		"id":      1,
@@ -84,12 +84,4 @@ func queryRPCWithRetry(method string, params []interface{}) (string, error) {
 	}
 
 	return prettyJSON.String(), nil
-}
-
-func RequestAccountInfo(address string) (string, error) {
-	return "", nil
-}
-
-func RequestTokenAccounts(address string) (string, error) {
-	return "", nil
 }
