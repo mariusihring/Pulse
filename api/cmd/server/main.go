@@ -5,10 +5,10 @@ import (
 	"pulse/graph/generated"
 	"pulse/graph/resolvers"
 	pulse_middleware "pulse/internal/auth/middleware"
-	"pulse/internal/db"
 	"pulse/internal/pubsub"
 
 	"github.com/charmbracelet/log"
+	"github.com/gorilla/websocket"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
@@ -18,11 +18,9 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
-const defaultPort = "8080"
-
 func main() {
 
-	database := db.InitDB()
+	// database := db.InitDB()
 
 	router := chi.NewRouter()
 
@@ -50,13 +48,23 @@ func main() {
 	}))
 
 	srv.AddTransport(transport.Options{})
+	srv.AddTransport(transport.GET{})
 	srv.AddTransport(transport.POST{})
-	srv.AddTransport(transport.Websocket{})
+
+	srv.AddTransport(transport.Websocket{
+		Upgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool {
+				// allow all lol
+				return true
+			},
+		},
+	})
 
 	srv.Use(extension.Introspection{})
 
 	router.Handle("/", playground.Handler("Pulse", "/query"))
-	router.Handle("/query", pulse_middleware.Auth(database)(srv))
+	// router.Handle("/query", pulse_middleware.Auth(database)(srv))
+	router.Handle("/query", srv)
 
 	/*
 		router.Options("/*", func(w http.ResponseWriter, r *http.Request) {
@@ -64,6 +72,6 @@ func main() {
 		})
 	*/
 
-	// log.Infof("Connect to http://localhost:%s/ for Graphql Playground", cfg.Server.Port)
+	log.Infof("Connect to http://localhost:%s/ for Graphql Playground", "3001")
 	log.Fatal(http.ListenAndServe(":3001", router))
 }

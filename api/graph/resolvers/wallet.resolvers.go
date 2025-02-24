@@ -76,9 +76,9 @@ func (r *mutationResolver) StartWalletUpdate(ctx context.Context, walletAddress 
 }
 
 // WalletUpdates is the resolver for the walletUpdates field.
-func (r *subscriptionResolver) WalletUpdates(ctx context.Context, jobID string) (<-chan *graphql_model.Wallet, error) {
+func (r *subscriptionResolver) WalletUpdates(ctx context.Context, jobID string) (<-chan *graphql_model.WalletUpdate, error) {
 	pubsub := r.RedisPubSub.Subscribe(ctx, jobID)
-	updates := make(chan *graphql_model.Wallet)
+	updates := make(chan *graphql_model.WalletUpdate)
 
 	go func() {
 		defer func() {
@@ -99,7 +99,7 @@ func (r *subscriptionResolver) WalletUpdates(ctx context.Context, jobID string) 
 				return
 			}
 
-			var update graphql_model.Wallet
+			var update graphql_model.WalletUpdate
 
 			if err := json.Unmarshal([]byte(msg.Payload), &update); err != nil {
 				log.Errorf("Failed to unmarshal message", "err", err)

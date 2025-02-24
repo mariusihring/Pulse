@@ -1,6 +1,6 @@
 type Subscription {
   # The walletUpdates subscription accepts a walletAddress argument
-  walletUpdates(jobID: ID!): Wallet!
+  walletUpdates(jobID: ID!): WalletUpdate!
 }
 
 extend type Mutation {

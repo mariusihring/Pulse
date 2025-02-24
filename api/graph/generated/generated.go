@@ -221,7 +221,7 @@ type QueryResolver interface {
 	Me(ctx context.Context) (*graphql_model.User, error)
 }
 type SubscriptionResolver interface {
-	WalletUpdates(ctx context.Context, jobID string) (<-chan *graphql_model.Wallet, error)
+	WalletUpdates(ctx context.Context, jobID string) (<-chan *graphql_model.WalletUpdate, error)
 }
 
 type executableSchema struct {
@@ -1047,7 +1047,7 @@ type Query {
 `, BuiltIn: false},
 	{Name: "../schema/wallet.graphql", Input: `type Subscription {
   # The walletUpdates subscription accepts a walletAddress argument
-  walletUpdates(jobID: ID!): Wallet!
+  walletUpdates(jobID: ID!): WalletUpdate!
 }
 
 extend type Mutation {
@@ -3286,7 +3286,7 @@ func (ec *executionContext) _Subscription_walletUpdates(ctx context.Context, fie
 	}
 	return func(ctx context.Context) graphql.Marshaler {
 		select {
-		case res, ok := <-resTmp.(<-chan *graphql_model.Wallet):
+		case res, ok := <-resTmp.(<-chan *graphql_model.WalletUpdate):
 			if !ok {
 				return nil
 			}
@@ -3294,7 +3294,7 @@ func (ec *executionContext) _Subscription_walletUpdates(ctx context.Context, fie
 				w.Write([]byte{'{'})
 				graphql.MarshalString(field.Alias).MarshalGQL(w)
 				w.Write([]byte{':'})
-				ec.marshalNWallet2ᚖpulseᚋgraphᚋgraphql_modelᚐWallet(ctx, field.Selections, res).MarshalGQL(w)
+				ec.marshalNWalletUpdate2ᚖpulseᚋgraphᚋgraphql_modelᚐWalletUpdate(ctx, field.Selections, res).MarshalGQL(w)
 				w.Write([]byte{'}'})
 			})
 		case <-ctx.Done():
@@ -3311,22 +3311,14 @@ func (ec *executionContext) fieldContext_Subscription_walletUpdates(ctx context.
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "address":
-				return ec.fieldContext_Wallet_address(ctx, field)
-			case "sol_balance":
-				return ec.fieldContext_Wallet_sol_balance(ctx, field)
-			case "sol_value":
-				return ec.fieldContext_Wallet_sol_value(ctx, field)
-			case "wallet_value":
-				return ec.fieldContext_Wallet_wallet_value(ctx, field)
-			case "tokens":
-				return ec.fieldContext_Wallet_tokens(ctx, field)
-			case "transactions":
-				return ec.fieldContext_Wallet_transactions(ctx, field)
-			case "last_updated":
-				return ec.fieldContext_Wallet_last_updated(ctx, field)
+			case "JobID":
+				return ec.fieldContext_WalletUpdate_JobID(ctx, field)
+			case "Progress":
+				return ec.fieldContext_WalletUpdate_Progress(ctx, field)
+			case "Wallet":
+				return ec.fieldContext_WalletUpdate_Wallet(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Wallet", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type WalletUpdate", field.Name)
 		},
 	}
 	defer func() {
@@ -9860,10 +9852,6 @@ func (ec *executionContext) marshalNUser2ᚖpulseᚋgraphᚋgraphql_modelᚐUser
 	return ec._User(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNWallet2pulseᚋgraphᚋgraphql_modelᚐWallet(ctx context.Context, sel ast.SelectionSet, v graphql_model.Wallet) graphql.Marshaler {
-	return ec._Wallet(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNWallet2ᚖpulseᚋgraphᚋgraphql_modelᚐWallet(ctx context.Context, sel ast.SelectionSet, v *graphql_model.Wallet) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -9872,6 +9860,20 @@ func (ec *executionContext) marshalNWallet2ᚖpulseᚋgraphᚋgraphql_modelᚐWa
 		return graphql.Null
 	}
 	return ec._Wallet(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNWalletUpdate2pulseᚋgraphᚋgraphql_modelᚐWalletUpdate(ctx context.Context, sel ast.SelectionSet, v graphql_model.WalletUpdate) graphql.Marshaler {
+	return ec._WalletUpdate(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNWalletUpdate2ᚖpulseᚋgraphᚋgraphql_modelᚐWalletUpdate(ctx context.Context, sel ast.SelectionSet, v *graphql_model.WalletUpdate) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._WalletUpdate(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

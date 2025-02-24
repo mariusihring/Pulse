@@ -11,7 +11,7 @@
 import {defaultPlugins, handleSubscriptions, useClient} from "villus"
 import {createClient} from "graphql-ws"
 const wsClient = createClient({
-  url: "ws://localhost:3001/query"
+  url: "ws://127.0.0.1:3001/query"
 })
 const subscriptionHandler = (handleSubscriptions(operation => {
   return {
@@ -32,7 +32,7 @@ const subscriptionHandler = (handleSubscriptions(operation => {
 }))
 useClient({
   url: "http://localhost:3001/query",
-  use: [...defaultPlugins()]
+  use: [subscriptionHandler, ...defaultPlugins()]
 })
 
 </script>
