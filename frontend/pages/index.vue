@@ -6,20 +6,64 @@
       type="text"
       placeholder="Enter wallet address"
     />
-    <button @click="startUpdate"> {{isFetching ? "Start Update" : "Loading..."}}</button>
+    <Button @click="startUpdate"> {{isFetching ? "Start Update" : "Loading..."}}</Button>
 
     <div v-if="jobId">
       <p><strong>Job ID:</strong> {{ jobId }}</p>
-      <p><strong>Subscription Data:</strong></p>
-      <pre>{{ subscriptionData }}</pre>
     </div>
+  <div class="flex w-full items-center justify-center">
+    <UserTable :columns="columns" :data="tokens"/>
   </div>
+  </div>
+  
+
 </template>
 
 <script  setup lang="ts">
 import { ref, watch } from 'vue'
 import { useMutation, useSubscription } from 'villus'
 import {graphql} from "../src/gql"
+import UserTable from "../src/compontents/test_table.vue"
+import type { WalletUpdate } from '@/src/gql/graphql'
+import {Button} from "@/components/ui/button"
+import {Checkbox} from "@/components/ui/checkbox"
+import { computed } from 'vue'
+import {createColumnHelper} from "@tanstack/vue-table";
+import type {Token} from "@/src/gql/graphql"
+
+const columnHelper = createColumnHelper<Token>()
+const columns = [
+    columnHelper.display({
+      id: "select",
+      header: ({table}) => h(Checkbox, {
+        "modelValue": table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate"),
+        'onUpdate:modelValue': value => table.toggleAllPageRowsSelected(!!value),
+        'ariaLabel':  "Select all",
+      }),
+      cell: ({row}) => {
+        return h(Checkbox, {
+          'modelValue': row.getIsSelected(),
+          'onUpdate:modelValue': value => row.toggleSelected(!!value),
+          'ariaLabel':  "Select row",
+        })
+      }
+    }),
+    columnHelper.display({
+      id: "name",
+      header: ({table}) => h("h1", {
+
+      }, "Name"),
+      cell: ({row}) => {
+        console.log(row.getValue('name'))
+        return h('p', {}, row.getValue('name'))
+      }
+    })
+]
+
+const tokens = computed(() => {
+  // Re-create the array if it exists, to trigger reactivity.
+  return subscriptionData.value?.Wallet?.tokens ? [ ...subscriptionData.value.Wallet.tokens ] : []
+})
 
 // GraphQL mutation to start the wallet update process.
 const START_WALLET_UPDATE = graphql(`
@@ -66,7 +110,7 @@ const WALLET_UPDATES = graphql(`
 `)
 const walletAddress = ref('')
 const jobId = ref('')
-const subscriptionData = ref('')
+const subscriptionData = ref<WalletUpdate | undefined>(undefined)
 
 // Create the mutation hook.
 const { execute } = useMutation(START_WALLET_UPDATE)
@@ -84,7 +128,7 @@ const { subscribe, isFetching } = useSubscription({
   variables: subscriptionVariables
 }, ({ data, error }) => {
   console.log(data)
-  subscriptionData.value = JSON.stringify(data?.walletUpdates, null, 2)
+  subscriptionData.value = data?.walletUpdates
 })
 
 const startUpdate = async () => {
