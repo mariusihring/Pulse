@@ -6,8 +6,7 @@ import (
 	"pulse/graph/resolvers"
 	pulse_middleware "pulse/internal/auth/middleware"
 	"pulse/internal/db"
-	"pulse/internal/services"
-	"pulse/internal/services/loaders"
+	"pulse/internal/pubsub"
 
 	"github.com/charmbracelet/log"
 
@@ -34,16 +33,16 @@ func main() {
 	router.Use(middleware.SetHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS"))
 	router.Use(middleware.SetHeader("Access-Control-Allow-Headers", "Content-Type, Authorization"))
 
-	// Create Loaders
+	// Create PubSUb
+	redisAddr := "localhost:6379"
+	redisPassword := ""
+	redisDB := 0
 
-	solana_loader := loaders.NewSolanaLoader(database)
 	// Create Services
-
-	wallet_service := services.NewWalletService(database, solana_loader)
 
 	srv := handler.New(generated.NewExecutableSchema(generated.Config{
 		Resolvers: &resolvers.Resolver{
-			WalletService: wallet_service,
+			RedisPubSub: pubsub.NewRedisPubSub(redisAddr, redisPassword, redisDB),
 		},
 		Directives: generated.DirectiveRoot{
 			Auth: pulse_middleware.AuthDirective,
@@ -52,6 +51,7 @@ func main() {
 
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.POST{})
+	srv.AddTransport(transport.Websocket{})
 
 	srv.Use(extension.Introspection{})
 

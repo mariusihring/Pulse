@@ -42,6 +42,11 @@ type Instruction struct {
 	StackHeight    int32   `json:"stack_height"`
 }
 
+type Job struct {
+	ID            string `json:"id"`
+	WalletAddress string `json:"walletAddress"`
+}
+
 type LoginInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -166,4 +171,10 @@ type Wallet struct {
 	Tokens       []*Token       `json:"tokens"`
 	Transactions []*Transaction `json:"transactions"`
 	LastUpdated  string         `json:"last_updated"`
+}
+
+type WalletUpdate struct {
+	JobID    string  `json:"JobID"`
+	Progress int32   `json:"Progress"`
+	Wallet   *Wallet `json:"Wallet"`
 }

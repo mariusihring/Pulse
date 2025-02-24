@@ -14,5 +14,6 @@ input CreateUserInput {
 }
 
 type Query {
-  me: User! @auth
+  # me: User! @auth
+  me: User!
 }

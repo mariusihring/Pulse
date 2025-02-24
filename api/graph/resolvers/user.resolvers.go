@@ -6,14 +6,22 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 	"pulse/graph/generated"
 	"pulse/graph/graphql_model"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*graphql_model.User, error) {
-	panic(fmt.Errorf("not implemented: Me - me"))
+	return &graphql_model.User{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      "Marius",
+		Email:     "test@test.de",
+	}, nil
 }
 
 // Query returns generated.QueryResolver implementation.

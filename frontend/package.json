@@ -10,7 +10,9 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "graphql-ws": "^6.0.4",
     "nuxt": "^3.15.4",
+    "villus": "^3.5.2",
     "vue": "latest",
     "vue-router": "latest"
   },

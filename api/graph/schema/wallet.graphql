@@ -1,8 +1,21 @@
-# GraphQL schema fragment for wallet response subscription
-
 type Subscription {
   # The walletUpdates subscription accepts a walletAddress argument
-  walletUpdates(walletAddress: String!): Wallet!
+  walletUpdates(jobID: ID!): Wallet!
+}
+
+extend type Mutation {
+  startWalletUpdate(walletAddress: String!): Job!
+}
+
+type Job {
+  id: ID!,
+  walletAddress: String!
+}
+
+type WalletUpdate {
+  JobID: ID!,
+  Progress: Int!,
+  Wallet: Wallet!
 }
 
 type Wallet {

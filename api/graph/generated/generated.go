@@ -80,6 +80,11 @@ type ComplexityRoot struct {
 		StackHeight    func(childComplexity int) int
 	}
 
+	Job struct {
+		ID            func(childComplexity int) int
+		WalletAddress func(childComplexity int) int
+	}
+
 	MessageHeader struct {
 		NumReadonlySignedAccounts   func(childComplexity int) int
 		NumReadonlyUnsignedAccounts func(childComplexity int) int
@@ -100,8 +105,9 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		Login    func(childComplexity int, input graphql_model.LoginInput) int
-		Register func(childComplexity int, input graphql_model.RegisterInput) int
+		Login             func(childComplexity int, input graphql_model.LoginInput) int
+		Register          func(childComplexity int, input graphql_model.RegisterInput) int
+		StartWalletUpdate func(childComplexity int, walletAddress string) int
 	}
 
 	Query struct {
@@ -122,7 +128,7 @@ type ComplexityRoot struct {
 	}
 
 	Subscription struct {
-		WalletUpdates func(childComplexity int, walletAddress string) int
+		WalletUpdates func(childComplexity int, jobID string) int
 	}
 
 	Token struct {
@@ -198,17 +204,24 @@ type ComplexityRoot struct {
 		Transactions func(childComplexity int) int
 		WalletValue  func(childComplexity int) int
 	}
+
+	WalletUpdate struct {
+		JobID    func(childComplexity int) int
+		Progress func(childComplexity int) int
+		Wallet   func(childComplexity int) int
+	}
 }
 
 type MutationResolver interface {
 	Login(ctx context.Context, input graphql_model.LoginInput) (*graphql_model.AuthResponse, error)
 	Register(ctx context.Context, input graphql_model.RegisterInput) (*graphql_model.AuthResponse, error)
+	StartWalletUpdate(ctx context.Context, walletAddress string) (*graphql_model.Job, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*graphql_model.User, error)
 }
 type SubscriptionResolver interface {
-	WalletUpdates(ctx context.Context, walletAddress string) (<-chan *graphql_model.Wallet, error)
+	WalletUpdates(ctx context.Context, jobID string) (<-chan *graphql_model.Wallet, error)
 }
 
 type executableSchema struct {
@@ -320,6 +333,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Instruction.StackHeight(childComplexity), true
+
+	case "Job.id":
+		if e.complexity.Job.ID == nil {
+			break
+		}
+
+		return e.complexity.Job.ID(childComplexity), true
+
+	case "Job.walletAddress":
+		if e.complexity.Job.WalletAddress == nil {
+			break
+		}
+
+		return e.complexity.Job.WalletAddress(childComplexity), true
 
 	case "MessageHeader.num_readonly_signed_accounts":
 		if e.complexity.MessageHeader.NumReadonlySignedAccounts == nil {
@@ -436,6 +463,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Register(childComplexity, args["input"].(graphql_model.RegisterInput)), true
 
+	case "Mutation.startWalletUpdate":
+		if e.complexity.Mutation.StartWalletUpdate == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_startWalletUpdate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.StartWalletUpdate(childComplexity, args["walletAddress"].(string)), true
+
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
 			break
@@ -481,7 +520,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Subscription.WalletUpdates(childComplexity, args["walletAddress"].(string)), true
+		return e.complexity.Subscription.WalletUpdates(childComplexity, args["jobID"].(string)), true
 
 	case "Token.address":
 		if e.complexity.Token.Address == nil {
@@ -812,6 +851,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Wallet.WalletValue(childComplexity), true
 
+	case "WalletUpdate.JobID":
+		if e.complexity.WalletUpdate.JobID == nil {
+			break
+		}
+
+		return e.complexity.WalletUpdate.JobID(childComplexity), true
+
+	case "WalletUpdate.Progress":
+		if e.complexity.WalletUpdate.Progress == nil {
+			break
+		}
+
+		return e.complexity.WalletUpdate.Progress(childComplexity), true
+
+	case "WalletUpdate.Wallet":
+		if e.complexity.WalletUpdate.Wallet == nil {
+			break
+		}
+
+		return e.complexity.WalletUpdate.Wallet(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -981,14 +1041,28 @@ input CreateUserInput {
 }
 
 type Query {
-  me: User! @auth
+  # me: User! @auth
+  me: User!
 }
 `, BuiltIn: false},
-	{Name: "../schema/wallet.graphql", Input: `# GraphQL schema fragment for wallet response subscription
-
-type Subscription {
+	{Name: "../schema/wallet.graphql", Input: `type Subscription {
   # The walletUpdates subscription accepts a walletAddress argument
-  walletUpdates(walletAddress: String!): Wallet!
+  walletUpdates(jobID: ID!): Wallet!
+}
+
+extend type Mutation {
+  startWalletUpdate(walletAddress: String!): Job!
+}
+
+type Job {
+  id: ID!,
+  walletAddress: String!
+}
+
+type WalletUpdate {
+  JobID: ID!,
+  Progress: Int!,
+  Wallet: Wallet!
 }
 
 type Wallet {
@@ -1204,6 +1278,34 @@ func (ec *executionContext) field_Mutation_register_argsInput(
 	return zeroVal, nil
 }
 
+func (ec *executionContext) field_Mutation_startWalletUpdate_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_startWalletUpdate_argsWalletAddress(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["walletAddress"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_startWalletUpdate_argsWalletAddress(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	if _, ok := rawArgs["walletAddress"]; !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("walletAddress"))
+	if tmp, ok := rawArgs["walletAddress"]; ok {
+		return ec.unmarshalNString2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1235,25 +1337,25 @@ func (ec *executionContext) field_Query___type_argsName(
 func (ec *executionContext) field_Subscription_walletUpdates_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := ec.field_Subscription_walletUpdates_argsWalletAddress(ctx, rawArgs)
+	arg0, err := ec.field_Subscription_walletUpdates_argsJobID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["walletAddress"] = arg0
+	args["jobID"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Subscription_walletUpdates_argsWalletAddress(
+func (ec *executionContext) field_Subscription_walletUpdates_argsJobID(
 	ctx context.Context,
 	rawArgs map[string]any,
 ) (string, error) {
-	if _, ok := rawArgs["walletAddress"]; !ok {
+	if _, ok := rawArgs["jobID"]; !ok {
 		var zeroVal string
 		return zeroVal, nil
 	}
 
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("walletAddress"))
-	if tmp, ok := rawArgs["walletAddress"]; ok {
-		return ec.unmarshalNString2string(ctx, tmp)
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("jobID"))
+	if tmp, ok := rawArgs["jobID"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
 	}
 
 	var zeroVal string
@@ -1913,6 +2015,94 @@ func (ec *executionContext) fieldContext_Instruction_stack_height(_ context.Cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Job_id(ctx context.Context, field graphql.CollectedField, obj *graphql_model.Job) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Job_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Job_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Job",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Job_walletAddress(ctx context.Context, field graphql.CollectedField, obj *graphql_model.Job) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Job_walletAddress(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.WalletAddress, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Job_walletAddress(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Job",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2652,6 +2842,67 @@ func (ec *executionContext) fieldContext_Mutation_register(ctx context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_startWalletUpdate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_startWalletUpdate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().StartWalletUpdate(rctx, fc.Args["walletAddress"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graphql_model.Job)
+	fc.Result = res
+	return ec.marshalNJob2ᚖpulseᚋgraphᚋgraphql_modelᚐJob(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_startWalletUpdate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Job_id(ctx, field)
+			case "walletAddress":
+				return ec.fieldContext_Job_walletAddress(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Job", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_startWalletUpdate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_me(ctx, field)
 	if err != nil {
@@ -2665,30 +2916,8 @@ func (ec *executionContext) _Query_me(ctx context.Context, field graphql.Collect
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		directive0 := func(rctx context.Context) (any, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().Me(rctx)
-		}
-
-		directive1 := func(ctx context.Context) (any, error) {
-			if ec.directives.Auth == nil {
-				var zeroVal *graphql_model.User
-				return zeroVal, errors.New("directive auth is not implemented")
-			}
-			return ec.directives.Auth(ctx, nil, directive0)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*graphql_model.User); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *pulse/graph/graphql_model.User`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Me(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3043,7 +3272,7 @@ func (ec *executionContext) _Subscription_walletUpdates(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Subscription().WalletUpdates(rctx, fc.Args["walletAddress"].(string))
+		return ec.resolvers.Subscription().WalletUpdates(rctx, fc.Args["jobID"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5302,6 +5531,154 @@ func (ec *executionContext) fieldContext_Wallet_last_updated(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _WalletUpdate_JobID(ctx context.Context, field graphql.CollectedField, obj *graphql_model.WalletUpdate) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_WalletUpdate_JobID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.JobID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_WalletUpdate_JobID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "WalletUpdate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _WalletUpdate_Progress(ctx context.Context, field graphql.CollectedField, obj *graphql_model.WalletUpdate) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_WalletUpdate_Progress(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Progress, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int32)
+	fc.Result = res
+	return ec.marshalNInt2int32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_WalletUpdate_Progress(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "WalletUpdate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _WalletUpdate_Wallet(ctx context.Context, field graphql.CollectedField, obj *graphql_model.WalletUpdate) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_WalletUpdate_Wallet(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Wallet, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graphql_model.Wallet)
+	fc.Result = res
+	return ec.marshalNWallet2ᚖpulseᚋgraphᚋgraphql_modelᚐWallet(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_WalletUpdate_Wallet(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "WalletUpdate",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "address":
+				return ec.fieldContext_Wallet_address(ctx, field)
+			case "sol_balance":
+				return ec.fieldContext_Wallet_sol_balance(ctx, field)
+			case "sol_value":
+				return ec.fieldContext_Wallet_sol_value(ctx, field)
+			case "wallet_value":
+				return ec.fieldContext_Wallet_wallet_value(ctx, field)
+			case "tokens":
+				return ec.fieldContext_Wallet_tokens(ctx, field)
+			case "transactions":
+				return ec.fieldContext_Wallet_transactions(ctx, field)
+			case "last_updated":
+				return ec.fieldContext_Wallet_last_updated(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Wallet", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext___Directive_name(ctx, field)
 	if err != nil {
@@ -7434,6 +7811,50 @@ func (ec *executionContext) _Instruction(ctx context.Context, sel ast.SelectionS
 	return out
 }
 
+var jobImplementors = []string{"Job"}
+
+func (ec *executionContext) _Job(ctx context.Context, sel ast.SelectionSet, obj *graphql_model.Job) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, jobImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Job")
+		case "id":
+			out.Values[i] = ec._Job_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "walletAddress":
+			out.Values[i] = ec._Job_walletAddress(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var messageHeaderImplementors = []string{"MessageHeader"}
 
 func (ec *executionContext) _MessageHeader(ctx context.Context, sel ast.SelectionSet, obj *graphql_model.MessageHeader) graphql.Marshaler {
@@ -7596,6 +8017,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "register":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_register(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "startWalletUpdate":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_startWalletUpdate(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -8366,6 +8794,55 @@ func (ec *executionContext) _Wallet(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
+var walletUpdateImplementors = []string{"WalletUpdate"}
+
+func (ec *executionContext) _WalletUpdate(ctx context.Context, sel ast.SelectionSet, obj *graphql_model.WalletUpdate) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, walletUpdateImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("WalletUpdate")
+		case "JobID":
+			out.Values[i] = ec._WalletUpdate_JobID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Progress":
+			out.Values[i] = ec._WalletUpdate_Progress(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Wallet":
+			out.Values[i] = ec._WalletUpdate_Wallet(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var __DirectiveImplementors = []string{"__Directive"}
 
 func (ec *executionContext) ___Directive(ctx context.Context, sel ast.SelectionSet, obj *introspection.Directive) graphql.Marshaler {
@@ -8822,6 +9299,21 @@ func (ec *executionContext) marshalNFloat2ᚕfloat64ᚄ(ctx context.Context, sel
 	return ret
 }
 
+func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
+	res, err := graphql.UnmarshalID(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalID(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) marshalNInnerInstruction2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐInnerInstructionᚄ(ctx context.Context, sel ast.SelectionSet, v []*graphql_model.InnerInstruction) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -8975,6 +9467,20 @@ func (ec *executionContext) marshalNInt2ᚕint32ᚄ(ctx context.Context, sel ast
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNJob2pulseᚋgraphᚋgraphql_modelᚐJob(ctx context.Context, sel ast.SelectionSet, v graphql_model.Job) graphql.Marshaler {
+	return ec._Job(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNJob2ᚖpulseᚋgraphᚋgraphql_modelᚐJob(ctx context.Context, sel ast.SelectionSet, v *graphql_model.Job) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Job(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNLoginInput2pulseᚋgraphᚋgraphql_modelᚐLoginInput(ctx context.Context, v any) (graphql_model.LoginInput, error) {

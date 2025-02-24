@@ -19,8 +19,8 @@ func InitDB() *gorm.DB {
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s TimeZone=UTC",
 		"localhost",
-		"mariusihring",
-		"password",
+		"postgres",
+		"root",
 		"pulse",
 		"5432",
 	)
