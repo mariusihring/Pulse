@@ -6,10 +6,11 @@ package resolvers
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"pulse/graph/generated"
 	"pulse/graph/graphql_model"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Me is the resolver for the me field.

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.29.3
-// source: solana_wallet.proto
+// source: proto/solana_wallet.proto
 
 package generated
 
@@ -126,5 +126,5 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "solana_wallet.proto",
+	Metadata: "proto/solana_wallet.proto",
 }

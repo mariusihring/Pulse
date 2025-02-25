@@ -39,7 +39,16 @@ type Token {
   pnl: Float!
   invested: Float!
   value: Float!
-  history_prices: [Float!]!
+  history_prices: [PricePoint!]!
+}
+
+type PricePoint {
+  Timestamp: Int!
+  Open: Float!
+  High: Float!
+  Low: Float!
+  Close: Float!
+  Volume: Float!
 }
 
 type Transaction {

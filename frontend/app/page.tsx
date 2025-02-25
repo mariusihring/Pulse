@@ -43,6 +43,84 @@ const WalletUpdateSubscription = graphql(`
                 transactions {
                     jsonrpc
                     id
+                    result {
+                        block_time
+                        slot
+                        meta {
+                            compute_units_consumed
+                            fee
+                            log_messages
+                            post_balances
+                            pre_balances
+                            post_token_balances {
+                                account_index
+                                mint
+                                owner
+                                program_id
+                                ui_token_amount {
+                                    amount
+                                    decimals
+                                    ui_amount
+                                    ui_amount_string
+                                }
+                            }
+                            inner_instructions {
+                                index
+                                instructions {
+                                    accounts
+                                    data
+                                    program_id_index
+                                    stack_height
+                                }
+                            }
+                            pre_token_balances {
+                                account_index
+                                mint
+                                owner
+                                program_id
+                                ui_token_amount {
+                                    amount
+                                    decimals
+                                    ui_amount
+                                    ui_amount_string
+                                }
+                            }
+                            rewards {
+                                info
+                            }
+                            status {
+                                ok
+                                error_message
+                            }
+                        }
+                        transaction {
+                            signatures
+                            message {
+                                account_keys
+                                recent_blockhash
+                                address_table_lookups {
+                                    account_key
+                                    readonly_indexes
+                                    writable_indexes
+                                }
+                                header {
+                                    num_readonly_signed_accounts
+                                    num_readonly_unsigned_accounts
+                                    num_required_signatures
+                                }
+                                instructions {
+                                    accounts
+                                    data
+                                    program_id_index
+                                    stack_height
+                                }
+                            }
+                        }
+                    }
+                    err {
+                        code
+                        message
+                    }
                 }
             }
         }
@@ -57,6 +135,7 @@ export default function Home() {
     const [startWalletScanResult, startWalletScan] = useMutation(StartWalletScanMutation);
 
     // Define the subscription with pause initially true
+    //@ts-expect-error
     const [subscriptionResult] = useSubscription({
         query: WalletUpdateSubscription,
         variables: { input: jobId },

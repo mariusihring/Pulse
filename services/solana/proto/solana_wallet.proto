@@ -38,7 +38,16 @@ message Token {
   double invested = 9;
   double value = 10;
   // Optionally, if history_prices is required, you can add a repeated field.
-  repeated double history_prices = 11;
+  repeated PricePoint history_prices = 11;
+}
+
+message PricePoint {
+  int32 timestamp = 1;
+  double open = 2;
+  double high = 3;
+  double low = 4;
+  double close = 5;
+  double volume = 6;
 }
 
 // A transaction container.

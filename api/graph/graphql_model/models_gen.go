@@ -74,6 +74,15 @@ type Meta struct {
 type Mutation struct {
 }
 
+type PricePoint struct {
+	Timestamp int32   `json:"Timestamp"`
+	Open      float64 `json:"Open"`
+	High      float64 `json:"High"`
+	Low       float64 `json:"Low"`
+	Close     float64 `json:"Close"`
+	Volume    float64 `json:"Volume"`
+}
+
 type Query struct {
 }
 
@@ -100,17 +109,17 @@ type Subscription struct {
 }
 
 type Token struct {
-	Name          string    `json:"name"`
-	Address       string    `json:"address"`
-	Pool          string    `json:"pool"`
-	Description   string    `json:"description"`
-	Image         string    `json:"image"`
-	Amount        float64   `json:"amount"`
-	Price         float64   `json:"price"`
-	Pnl           float64   `json:"pnl"`
-	Invested      float64   `json:"invested"`
-	Value         float64   `json:"value"`
-	HistoryPrices []float64 `json:"history_prices"`
+	Name          string        `json:"name"`
+	Address       string        `json:"address"`
+	Pool          string        `json:"pool"`
+	Description   string        `json:"description"`
+	Image         string        `json:"image"`
+	Amount        float64       `json:"amount"`
+	Price         float64       `json:"price"`
+	Pnl           float64       `json:"pnl"`
+	Invested      float64       `json:"invested"`
+	Value         float64       `json:"value"`
+	HistoryPrices []*PricePoint `json:"history_prices"`
 }
 
 type TokenAmount struct {

@@ -110,6 +110,15 @@ type ComplexityRoot struct {
 		StartWalletUpdate func(childComplexity int, walletAddress string) int
 	}
 
+	PricePoint struct {
+		Close     func(childComplexity int) int
+		High      func(childComplexity int) int
+		Low       func(childComplexity int) int
+		Open      func(childComplexity int) int
+		Timestamp func(childComplexity int) int
+		Volume    func(childComplexity int) int
+	}
+
 	Query struct {
 		Me func(childComplexity int) int
 	}
@@ -474,6 +483,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.StartWalletUpdate(childComplexity, args["walletAddress"].(string)), true
+
+	case "PricePoint.Close":
+		if e.complexity.PricePoint.Close == nil {
+			break
+		}
+
+		return e.complexity.PricePoint.Close(childComplexity), true
+
+	case "PricePoint.High":
+		if e.complexity.PricePoint.High == nil {
+			break
+		}
+
+		return e.complexity.PricePoint.High(childComplexity), true
+
+	case "PricePoint.Low":
+		if e.complexity.PricePoint.Low == nil {
+			break
+		}
+
+		return e.complexity.PricePoint.Low(childComplexity), true
+
+	case "PricePoint.Open":
+		if e.complexity.PricePoint.Open == nil {
+			break
+		}
+
+		return e.complexity.PricePoint.Open(childComplexity), true
+
+	case "PricePoint.Timestamp":
+		if e.complexity.PricePoint.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.PricePoint.Timestamp(childComplexity), true
+
+	case "PricePoint.Volume":
+		if e.complexity.PricePoint.Volume == nil {
+			break
+		}
+
+		return e.complexity.PricePoint.Volume(childComplexity), true
 
 	case "Query.me":
 		if e.complexity.Query.Me == nil {
@@ -1086,7 +1137,16 @@ type Token {
   pnl: Float!
   invested: Float!
   value: Float!
-  history_prices: [Float!]!
+  history_prices: [PricePoint!]!
+}
+
+type PricePoint {
+  Timestamp: Int!
+  Open: Float!
+  High: Float!
+  Low: Float!
+  Close: Float!
+  Volume: Float!
 }
 
 type Transaction {
@@ -2903,6 +2963,270 @@ func (ec *executionContext) fieldContext_Mutation_startWalletUpdate(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _PricePoint_Timestamp(ctx context.Context, field graphql.CollectedField, obj *graphql_model.PricePoint) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PricePoint_Timestamp(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Timestamp, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int32)
+	fc.Result = res
+	return ec.marshalNInt2int32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PricePoint_Timestamp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PricePoint",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PricePoint_Open(ctx context.Context, field graphql.CollectedField, obj *graphql_model.PricePoint) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PricePoint_Open(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Open, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PricePoint_Open(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PricePoint",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PricePoint_High(ctx context.Context, field graphql.CollectedField, obj *graphql_model.PricePoint) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PricePoint_High(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.High, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PricePoint_High(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PricePoint",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PricePoint_Low(ctx context.Context, field graphql.CollectedField, obj *graphql_model.PricePoint) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PricePoint_Low(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Low, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PricePoint_Low(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PricePoint",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PricePoint_Close(ctx context.Context, field graphql.CollectedField, obj *graphql_model.PricePoint) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PricePoint_Close(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Close, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PricePoint_Close(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PricePoint",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PricePoint_Volume(ctx context.Context, field graphql.CollectedField, obj *graphql_model.PricePoint) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PricePoint_Volume(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Volume, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PricePoint_Volume(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PricePoint",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_me(ctx, field)
 	if err != nil {
@@ -3801,9 +4125,9 @@ func (ec *executionContext) _Token_history_prices(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]float64)
+	res := resTmp.([]*graphql_model.PricePoint)
 	fc.Result = res
-	return ec.marshalNFloat2ᚕfloat64ᚄ(ctx, field.Selections, res)
+	return ec.marshalNPricePoint2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐPricePointᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Token_history_prices(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3813,7 +4137,21 @@ func (ec *executionContext) fieldContext_Token_history_prices(_ context.Context,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			switch field.Name {
+			case "Timestamp":
+				return ec.fieldContext_PricePoint_Timestamp(ctx, field)
+			case "Open":
+				return ec.fieldContext_PricePoint_Open(ctx, field)
+			case "High":
+				return ec.fieldContext_PricePoint_High(ctx, field)
+			case "Low":
+				return ec.fieldContext_PricePoint_Low(ctx, field)
+			case "Close":
+				return ec.fieldContext_PricePoint_Close(ctx, field)
+			case "Volume":
+				return ec.fieldContext_PricePoint_Volume(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PricePoint", field.Name)
 		},
 	}
 	return fc, nil
@@ -8043,6 +8381,70 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
+var pricePointImplementors = []string{"PricePoint"}
+
+func (ec *executionContext) _PricePoint(ctx context.Context, sel ast.SelectionSet, obj *graphql_model.PricePoint) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pricePointImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PricePoint")
+		case "Timestamp":
+			out.Values[i] = ec._PricePoint_Timestamp(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Open":
+			out.Values[i] = ec._PricePoint_Open(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "High":
+			out.Values[i] = ec._PricePoint_High(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Low":
+			out.Values[i] = ec._PricePoint_Low(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Close":
+			out.Values[i] = ec._PricePoint_Close(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Volume":
+			out.Values[i] = ec._PricePoint_Volume(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -9259,38 +9661,6 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
-func (ec *executionContext) unmarshalNFloat2ᚕfloat64ᚄ(ctx context.Context, v any) ([]float64, error) {
-	var vSlice []any
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]float64, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNFloat2float64(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNFloat2ᚕfloat64ᚄ(ctx context.Context, sel ast.SelectionSet, v []float64) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalNFloat2float64(ctx, sel, v[i])
-	}
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -9498,6 +9868,60 @@ func (ec *executionContext) marshalNMeta2ᚖpulseᚋgraphᚋgraphql_modelᚐMeta
 		return graphql.Null
 	}
 	return ec._Meta(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNPricePoint2ᚕᚖpulseᚋgraphᚋgraphql_modelᚐPricePointᚄ(ctx context.Context, sel ast.SelectionSet, v []*graphql_model.PricePoint) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPricePoint2ᚖpulseᚋgraphᚋgraphql_modelᚐPricePoint(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNPricePoint2ᚖpulseᚋgraphᚋgraphql_modelᚐPricePoint(ctx context.Context, sel ast.SelectionSet, v *graphql_model.PricePoint) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PricePoint(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNRegisterInput2pulseᚋgraphᚋgraphql_modelᚐRegisterInput(ctx context.Context, v any) (graphql_model.RegisterInput, error) {

@@ -100,7 +100,19 @@ func (s *server) AddWallet(req *pb.WalletRequest, stream pb.WalletService_AddWal
 		data, _ := solana_requests.GetTokenMetadata(account.Account.Data.Parsed.Info.Mint)
 		pool, _ := coingecko_requests.GetTokenPools(account.Account.Data.Parsed.Info.Mint)
 
-		prices, _ := coingecko_requests.GetOHLCVS(pool, "hour", 0, 0)
+		prices, _ := coingecko_requests.GetOHLCVS(pool, "minute", 0, 0)
+		var ohlcvs_data []*pb.PricePoint
+		for _, price := range prices {
+			point := pb.PricePoint{
+				Timestamp: int32(price[0]),
+				Open:      price[1],
+				High:      price[2],
+				Low:       price[3],
+				Close:     price[4],
+				Volume:    price[5],
+			}
+			ohlcvs_data = append(ohlcvs_data, &point)
+		}
 		priceHistories[account.Account.Data.Parsed.Info.Mint] = prices
 		f, err := strconv.ParseFloat(current_token_prices[account.Account.Data.Parsed.Info.Mint], 64)
 		if err != nil {
@@ -108,19 +120,17 @@ func (s *server) AddWallet(req *pb.WalletRequest, stream pb.WalletService_AddWal
 			continue
 		}
 		tokens = append(tokens, &pb.Token{
-			Name:        data.Result.Content.Metadata.Name,
-			Address:     account.Account.Data.Parsed.Info.Mint,
-			Pool:        pool,
-			Description: data.Result.Content.Metadata.Description,
-			Image:       data.Result.Content.Links.Image,
-			Amount:      account.Account.Data.Parsed.Info.TokenAmount.UIAmount,
-			Price:       f,
-			Pnl:         0,
-			Invested:    0,
-			Value:       account.Account.Data.Parsed.Info.TokenAmount.UIAmount * f,
-			HistoryPrices: []float64{
-				0,
-			},
+			Name:          data.Result.Content.Metadata.Name,
+			Address:       account.Account.Data.Parsed.Info.Mint,
+			Pool:          pool,
+			Description:   data.Result.Content.Metadata.Description,
+			Image:         data.Result.Content.Links.Image,
+			Amount:        account.Account.Data.Parsed.Info.TokenAmount.UIAmount,
+			Price:         f,
+			Pnl:           0,
+			Invested:      0,
+			Value:         account.Account.Data.Parsed.Info.TokenAmount.UIAmount * f,
+			HistoryPrices: ohlcvs_data,
 		})
 		response.Tokens = tokens
 		response.WalletValue = response.WalletValue + (account.Account.Data.Parsed.Info.TokenAmount.UIAmount * f)
@@ -214,7 +224,6 @@ func (s *server) AddWallet(req *pb.WalletRequest, stream pb.WalletService_AddWal
 	}
 
 	// Additional steps (history price data, pnl calculations, etc.) can be added here.
-
 	// Send final update
 	if err := stream.Send(response); err != nil {
 		log.Printf("error sending update: %v", err)

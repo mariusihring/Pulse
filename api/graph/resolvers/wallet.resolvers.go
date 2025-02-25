@@ -146,10 +146,25 @@ func convertTokens(gTokens []*generated.Token) []*graphql_model.Token {
 			Pnl:           t.Pnl,
 			Invested:      t.Invested,
 			Value:         t.Value,
-			HistoryPrices: t.HistoryPrices,
+			HistoryPrices: convertHistoryPrices(t.HistoryPrices),
 		}
 	}
 	return tokens
+}
+
+func convertHistoryPrices(gPrices []*generated.PricePoint) []*graphql_model.PricePoint {
+	prices := make([]*graphql_model.PricePoint, len(gPrices))
+	for i, p := range gPrices {
+		prices[i] = &graphql_model.PricePoint{
+			Timestamp: p.Timestamp,
+			Open:      p.Open,
+			High:      p.High,
+			Low:       p.Low,
+			Close:     p.Close,
+			Volume:    p.Volume,
+		}
+	}
+	return prices
 }
 func convertTransactions(gTrans []*generated.Transaction) []*graphql_model.Transaction {
 	transactions := make([]*graphql_model.Transaction, len(gTrans))
