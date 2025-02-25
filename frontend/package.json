@@ -16,6 +16,7 @@
     "clsx": "^2.1.1",
     "graphql": "^16.10.0",
     "graphql-ws": "^6.0.4",
+    "lightweight-charts": "^5.0.2",
     "lucide-react": "^0.475.0",
     "next": "15.2.0-canary.74",
     "react": "^19.0.0",
