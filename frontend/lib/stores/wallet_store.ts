@@ -9,7 +9,6 @@ export type WalletStoreState = {
 
 
 export type WalletStoreActions = {
-    addWallet: (address: string) => Promise<void>
     updateWallet: (update: WalletUpdate) => Promise<void>
 }
 
@@ -23,11 +22,12 @@ export const createWalletStore = (initState: WalletStoreState = initialStoreStat
     return createStore<WalletStore>(
         immer((set) => ({
             ...initState,
-            addWallet: (address: string) => set((state) => {}),
             updateWallet: (update: WalletUpdate) => set((state) => {
                 const index = state.wallets.findIndex(wallet => wallet.JobID === update.JobID)
                 if (index !== -1) {
                     state.wallets[index] = update
+                } else {
+                    state.wallets.push(update)
                 }
             }),
         }))

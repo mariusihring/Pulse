@@ -124,6 +124,9 @@ type subscriptionResolver struct{ *Resolver }
 func convertWalletResponse(gr *generated.WalletResponse) *graphql_model.Wallet {
 	return &graphql_model.Wallet{
 		Address:      gr.Address,
+		Name:         "My Wallet",
+		Description:  "Description",
+		Network:      "solana",
 		SolBalance:   gr.SolBalance,
 		SolValue:     gr.SolValue,
 		WalletValue:  gr.WalletValue,
@@ -151,7 +154,6 @@ func convertTokens(gTokens []*generated.Token) []*graphql_model.Token {
 	}
 	return tokens
 }
-
 func convertHistoryPrices(gPrices []*generated.PricePoint) []*graphql_model.PricePoint {
 	prices := make([]*graphql_model.PricePoint, len(gPrices))
 	for i, p := range gPrices {

@@ -2,7 +2,7 @@
 import "./globals.css";
 import {Provider, cacheExchange, Client, fetchExchange, subscriptionExchange } from "urql";
 import {createClient as createWSClient} from "graphql-ws"
-import {CounterStoreProvider} from "@/lib/providers/wallet_provider";
+import { WalletStoreProvider} from "@/lib/providers/wallet_provider";
 
 export default function RootLayout({
   children,
@@ -32,10 +32,10 @@ export default function RootLayout({
       <body
       >
         <Provider value={client}>
-          <CounterStoreProvider>
+          <WalletStoreProvider>
 
             {children}
-          </CounterStoreProvider>
+          </WalletStoreProvider>
         </Provider>
       </body>
     </html>

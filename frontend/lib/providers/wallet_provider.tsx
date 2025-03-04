@@ -6,31 +6,31 @@ import type { WalletStore } from '@/lib/stores/wallet_store'
 import { createWalletStore } from '@/lib/stores/wallet_store'
 
 // Provide a typed context
-const CounterStoreContext = createContext<ReturnType<typeof createWalletStore> | null>(null)
+const WalletStoreContext = createContext<ReturnType<typeof createWalletStore> | null>(null)
 
 interface CounterStoreProviderProps {
     children: ReactNode
 }
 
-export const CounterStoreProvider = ({ children }: CounterStoreProviderProps) => {
+export const WalletStoreProvider = ({ children }: CounterStoreProviderProps) => {
     const storeRef = useRef<ReturnType<typeof createWalletStore>>()
     if (!storeRef.current) {
         storeRef.current = createWalletStore()
     }
 
     return (
-        <CounterStoreContext.Provider value={storeRef.current}>
+        <WalletStoreContext.Provider value={storeRef.current}>
             {children}
-        </CounterStoreContext.Provider>
+        </WalletStoreContext.Provider>
     )
 }
 
 // Generic hook to allow proper typing of the selector function
-export const useCounterStore = <T,>(
+export const useWalletStore = <T,>(
     selector: (state: WalletStore) => T,
     equalityFn?: (a: T, b: T) => boolean
 ): T => {
-    const store = useContext(CounterStoreContext)
+    const store = useContext(WalletStoreContext)
     if (!store) {
         throw new Error('useCounterStore must be used within a CounterStoreProvider')
     }

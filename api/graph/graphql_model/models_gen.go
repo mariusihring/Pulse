@@ -174,6 +174,9 @@ type User struct {
 
 type Wallet struct {
 	Address      string         `json:"address"`
+	Network      string         `json:"network"`
+	Name         string         `json:"name"`
+	Description  string         `json:"description"`
 	SolBalance   float64        `json:"sol_balance"`
 	SolValue     float64        `json:"sol_value"`
 	WalletValue  float64        `json:"wallet_value"`

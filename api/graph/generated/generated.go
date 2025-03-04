@@ -206,7 +206,10 @@ type ComplexityRoot struct {
 
 	Wallet struct {
 		Address      func(childComplexity int) int
+		Description  func(childComplexity int) int
 		LastUpdated  func(childComplexity int) int
+		Name         func(childComplexity int) int
+		Network      func(childComplexity int) int
 		SolBalance   func(childComplexity int) int
 		SolValue     func(childComplexity int) int
 		Tokens       func(childComplexity int) int
@@ -860,12 +863,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Wallet.Address(childComplexity), true
 
+	case "Wallet.description":
+		if e.complexity.Wallet.Description == nil {
+			break
+		}
+
+		return e.complexity.Wallet.Description(childComplexity), true
+
 	case "Wallet.last_updated":
 		if e.complexity.Wallet.LastUpdated == nil {
 			break
 		}
 
 		return e.complexity.Wallet.LastUpdated(childComplexity), true
+
+	case "Wallet.name":
+		if e.complexity.Wallet.Name == nil {
+			break
+		}
+
+		return e.complexity.Wallet.Name(childComplexity), true
+
+	case "Wallet.network":
+		if e.complexity.Wallet.Network == nil {
+			break
+		}
+
+		return e.complexity.Wallet.Network(childComplexity), true
 
 	case "Wallet.sol_balance":
 		if e.complexity.Wallet.SolBalance == nil {
@@ -1118,6 +1142,9 @@ type WalletUpdate {
 
 type Wallet {
   address: String!
+  network: String!
+  name: String!
+  description: String!
   sol_balance: Float!
   sol_value: Float!
   wallet_value: Float!
@@ -5563,6 +5590,138 @@ func (ec *executionContext) fieldContext_Wallet_address(_ context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _Wallet_network(ctx context.Context, field graphql.CollectedField, obj *graphql_model.Wallet) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Wallet_network(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Network, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Wallet_network(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Wallet",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Wallet_name(ctx context.Context, field graphql.CollectedField, obj *graphql_model.Wallet) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Wallet_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Wallet_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Wallet",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Wallet_description(ctx context.Context, field graphql.CollectedField, obj *graphql_model.Wallet) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Wallet_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Wallet_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Wallet",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Wallet_sol_balance(ctx context.Context, field graphql.CollectedField, obj *graphql_model.Wallet) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Wallet_sol_balance(ctx, field)
 	if err != nil {
@@ -5990,6 +6149,12 @@ func (ec *executionContext) fieldContext_WalletUpdate_Wallet(_ context.Context, 
 			switch field.Name {
 			case "address":
 				return ec.fieldContext_Wallet_address(ctx, field)
+			case "network":
+				return ec.fieldContext_Wallet_network(ctx, field)
+			case "name":
+				return ec.fieldContext_Wallet_name(ctx, field)
+			case "description":
+				return ec.fieldContext_Wallet_description(ctx, field)
 			case "sol_balance":
 				return ec.fieldContext_Wallet_sol_balance(ctx, field)
 			case "sol_value":
@@ -9132,6 +9297,21 @@ func (ec *executionContext) _Wallet(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = graphql.MarshalString("Wallet")
 		case "address":
 			out.Values[i] = ec._Wallet_address(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "network":
+			out.Values[i] = ec._Wallet_network(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Wallet_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "description":
+			out.Values[i] = ec._Wallet_description(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

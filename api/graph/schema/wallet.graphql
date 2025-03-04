@@ -20,6 +20,9 @@ type WalletUpdate {
 
 type Wallet {
   address: String!
+  network: String!
+  name: String!
+  description: String!
   sol_balance: Float!
   sol_value: Float!
   wallet_value: Float!
