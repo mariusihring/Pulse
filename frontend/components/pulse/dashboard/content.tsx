@@ -1,6 +1,8 @@
 import { CreditCard, Wallet, SendHorizontal, ArrowDownLeft, ArrowLeftRight, ShoppingCart, Coins } from "lucide-react"
 import WalletList from "./walletlist"
  import TransactionList from "./transactionlist"
+import TokenBalances from "@/components/pulse/dashboard/tokenbalances";
+import PieChart from "@/components/pulse/dashboard/piechart";
 // import TokenBalances from "./token-balances"
 // import PieChart from "./pie-chart"
 
@@ -226,24 +228,23 @@ export default function () {
       </div>
 
       <div className="bg-white dark:bg-[#0F0F12] rounded-xl p-6 flex flex-col items-start justify-start border border-gray-200 dark:border-[#1F1F23]">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 text-left flex items-center gap-2 w-full">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 text-left flex items-center gap-2">
           <Coins className="w-3.5 h-3.5 text-zinc-900 dark:text-zinc-50" />
-          Token Balances and Analytics
+          Token Balances
         </h2>
         <div className="w-full flex flex-col lg:flex-row gap-6">
+          <div className="w-full lg:w-2/3">
+            <TokenBalances tokens={tokens} />
+          </div>
           <div className="w-full lg:w-1/2">
-            {/* <TokenBalances tokens={tokens} />
-            <div className="mt-4">
-              <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-2">Token Distribution</h3>
-              <PieChart
+            <PieChart
                 data={tokens.map((token) => ({
                   name: token.symbol,
                   value: Number.parseFloat(token.currentValue),
                   color: token.color,
                 }))}
                 totalValue={totalValue}
-              />
-            </div> */}
+            />
           </div>
         </div>
       </div>

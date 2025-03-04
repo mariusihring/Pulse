@@ -5,6 +5,7 @@ import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {useCounterStore} from "@/lib/providers/wallet_provider";
 
 interface LayoutProps {
   children: ReactNode
@@ -13,7 +14,7 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
-
+  const {wallets} = useCounterStore((state) => state)
   const [address, setAddress] = useState("");
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className={`flex h-screen ${theme === "dark" ? "dark" : ""}`}>
       <div className="w-full flex flex-1 flex-col">
-        <header className="h-16 border-b border-gray-200 dark:border-[#1F1F23] flex gap-2 w-full items-center justify-end p-2 ">
+        <header className="h-16 border-b border-gray-200 dark:border-[#1F1F23] flex gap-2 w-full items-center justify-end p-2 px-6 ">
           <Input
             value={address}
             onChange={(e) => setAddress(e.target.value)}

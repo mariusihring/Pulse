@@ -1,9 +1,8 @@
 'use client'
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import {Provider, cacheExchange, Client, fetchExchange, subscriptionExchange } from "urql";
 import {createClient as createWSClient} from "graphql-ws"
+import {CounterStoreProvider} from "@/lib/providers/wallet_provider";
 
 export default function RootLayout({
   children,
@@ -33,7 +32,10 @@ export default function RootLayout({
       <body
       >
         <Provider value={client}>
-        {children}
+          <CounterStoreProvider>
+
+            {children}
+          </CounterStoreProvider>
         </Provider>
       </body>
     </html>
