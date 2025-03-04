@@ -9,20 +9,27 @@ export type WalletStoreState = {
 
 
 export type WalletStoreActions = {
+    addWallet: (address: string) => Promise<void>
+    updateWallet: (update: WalletUpdate) => Promise<void>
 }
 
 export type WalletStore = WalletStoreState & WalletStoreActions
 
-export const initState: WalletStoreState = {
+export const initialStoreState: WalletStoreState = {
     wallets: [],
 }
 
-export const createWalletStore = (initState: WalletStoreState = initState) => {
+export const createWalletStore = (initState: WalletStoreState = initialStoreState) => {
     return createStore<WalletStore>(
         immer((set) => ({
             ...initState,
-            //decrement: () => set((state) => { state.count-- }),
-            //increment: () => set((state) => { state.count++ }),
+            addWallet: (address: string) => set((state) => {}),
+            updateWallet: (update: WalletUpdate) => set((state) => {
+                const index = state.wallets.findIndex(wallet => wallet.JobID === update.JobID)
+                if (index !== -1) {
+                    state.wallets[index] = update
+                }
+            }),
         }))
     )
 }

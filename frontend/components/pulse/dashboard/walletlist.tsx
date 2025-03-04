@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils"
 import { Wallet } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import {WalletUpdate} from "@/lib/gql/graphql";
 
 interface AccountItem {
   id: string
@@ -11,14 +12,14 @@ interface AccountItem {
 }
 
 interface WalletListProps {
-  accounts?: AccountItem[]
+  accounts?: WalletUpdate
   className?: string
 }
 
 export default function WalletList({ accounts = [], className }: WalletListProps) {
   return (
     <div className={cn("space-y-1", className)}>
-      {accounts.map((account) => (
+      {accounts?.Wallet?.tokens.map((account) => (
         <div
           key={account.id}
           className={cn(
