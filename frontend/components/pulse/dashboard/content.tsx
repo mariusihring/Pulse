@@ -30,7 +30,7 @@ export default function () {
           </h2>
           <div className="flex-1">
             <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-2">Total Balance</p>
-            <h3 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50 mb-4">${sum_balance}</h3>
+            <h3 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50 mb-4">${sum_balance.toFixed(2)}</h3>
             <WalletList
               className="mt-4"
             />
