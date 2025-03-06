@@ -58,7 +58,7 @@ func (r *mutationResolver) StartWalletUpdate(ctx context.Context, walletAddress 
 
 			walletUpdate := &graphql_model.WalletUpdate{
 				JobID:    jobID,
-				Progress: int32(progress),
+				Progress: grpcResp.Progress,
 				Wallet:   convertWalletResponse(grpcResp),
 			}
 

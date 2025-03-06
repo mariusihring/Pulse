@@ -23,6 +23,9 @@ message WalletResponse {
   repeated Token tokens = 5;
   repeated Transaction transactions = 6;
   string last_updated = 7;
+  int32 token_amount = 8;
+  int32 transaction_amount = 9;
+  double progress = 10;
 }
 
 // Token information.

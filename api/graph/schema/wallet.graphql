@@ -14,7 +14,7 @@ type Job {
 
 type WalletUpdate {
   JobID: ID!,
-  Progress: Int!,
+  Progress: Float!,
   Wallet: Wallet!
 }
 

@@ -187,6 +187,6 @@ type Wallet struct {
 
 type WalletUpdate struct {
 	JobID    string  `json:"JobID"`
-	Progress int32   `json:"Progress"`
+	Progress float64 `json:"Progress"`
 	Wallet   *Wallet `json:"Wallet"`
 }
