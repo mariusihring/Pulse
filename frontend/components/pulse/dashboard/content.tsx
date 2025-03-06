@@ -57,17 +57,17 @@ export default function () {
         </h2>
         <div className="w-full flex flex-col lg:flex-row gap-6">
           <div className="w-full lg:w-2/3">
-            {/*<TokenBalances tokens={tokens} />*/}
+            <TokenBalances />
           </div>
           <div className="w-full lg:w-1/2">
-            {/*<PieChart*/}
-            {/*    data={allTokens.map((token) => ({*/}
-            {/*      name: token.symbol,*/}
-            {/*      value: token.currentValue,*/}
-            {/*      color: token.color,*/}
-            {/*    }))}*/}
-            {/*    totalValue={totalValue}*/}
-            {/*/>*/}
+            <PieChart
+                data={allTokens.map((token) => ({
+                  name: token.name,
+                  value: token.value,
+                  color: token.color,
+                }))}
+                totalValue={totalValue}
+            />
           </div>
         </div>
       </div>

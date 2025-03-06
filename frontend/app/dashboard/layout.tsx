@@ -230,6 +230,9 @@ export default function Layout({ children }: LayoutProps) {
           <Button onClick={handleFetch} disabled={startWalletScanResult.fetching}>
             {loading ? "Loading..." : "Fetch"}
           </Button>
+          <span className="wrap-none w-auto text-nowrap">
+            {curr_progress && <p>{curr_progress.toFixed(2)} %</p>}
+          </span>
         </header>
         <main className="flex-1 overflow-auto p-6 bg-white dark:bg-[#0F0F12]">{children}</main>
       </div>

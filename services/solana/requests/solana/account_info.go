@@ -21,7 +21,7 @@ func RequestAccountInfo(address string) (Wallet, error) {
 	var response solana_types.AccountInfoResponse
 	err = json.Unmarshal([]byte(data), &response)
 	if err != nil {
-		log.Error("Error occured", "Stack", err)
+		log.Error(" get account Error occured", "Stack", err)
 	}
 	balance, err := queryRPC("getBalance", []interface{}{address})
 	if err != nil {
@@ -30,7 +30,7 @@ func RequestAccountInfo(address string) (Wallet, error) {
 	var walletresponse solana_types.WalletResponse
 	err = json.Unmarshal([]byte(balance), &walletresponse)
 	if err != nil {
-		log.Error("Error occured", "Stack", err)
+		log.Error("Balance unmarshaling Error occured", "Stack", err)
 	}
 	divisor := math.Pow10(9)
 	floatValue := float64(walletresponse.Result.Value) / divisor

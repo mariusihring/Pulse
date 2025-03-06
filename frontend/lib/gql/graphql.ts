@@ -248,7 +248,7 @@ export type Wallet = {
 export type WalletUpdate = {
   __typename?: 'WalletUpdate';
   JobID: Scalars['ID']['output'];
-  Progress: Scalars['Int']['output'];
+  Progress: Scalars['Float']['output'];
   Wallet: Wallet;
 };
 

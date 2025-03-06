@@ -7,9 +7,9 @@ type SignaturesForAddressResponse struct {
 }
 
 type WalletTransactionHashResponse struct {
-	Err       string `json:"err"`
-	Memo      string `json:"memo"`
-	Signature string `json:"signature"`
-	Slot      int64  `json:"slot"`
-	BlockTime int64  `json:"blockTime"`
+	Err       *interface{} `json:"err"`
+	Memo      string       `json:"memo"`
+	Signature string       `json:"signature"`
+	Slot      int64        `json:"slot"`
+	BlockTime int64        `json:"blockTime"`
 }

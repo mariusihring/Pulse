@@ -2,6 +2,7 @@ package coingecko_requests
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -23,6 +24,9 @@ func GetTokenPools(address string) (string, error) {
 	err = json.Unmarshal([]byte(body), &response)
 	if err != nil {
 		return "", err
+	}
+	if len(response.Data) == 0 {
+		return "", errors.New("no pools")
 	}
 	return response.Data[0].Attributes.Address, nil
 }

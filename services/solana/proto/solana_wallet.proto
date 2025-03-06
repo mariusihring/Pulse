@@ -3,15 +3,24 @@ syntax = "proto3";
 package wallet;
 
 option go_package = "./generated";
-// The service definition including a streaming RPC.
+
+// The service definition including streaming RPCs.
 service WalletService {
   // Streams WalletResponse messages whenever the wallet is updated.
   rpc AddWallet(WalletRequest) returns (stream WalletResponse);
+
+  // Streams aggregated WalletResponse messages for multiple wallets.
+  rpc AggregateWallets(MultiWalletRequest) returns (stream WalletResponse);
 }
 
-// Request message to start the stream.
+// Request message for a single wallet.
 message WalletRequest {
   string wallet_address = 1;
+}
+
+// Request message for multiple wallets.
+message MultiWalletRequest {
+  repeated string wallet_addresses = 1;
 }
 
 // Top‐level response message.
@@ -40,7 +49,6 @@ message Token {
   double pnl = 8;
   double invested = 9;
   double value = 10;
-  // Optionally, if history_prices is required, you can add a repeated field.
   repeated PricePoint history_prices = 11;
 }
 
@@ -56,8 +64,8 @@ message PricePoint {
 // A transaction container.
 message Transaction {
   string jsonrpc = 1;
-  optional TransactionResult result = 2;
-  optional Error err = 3;
+  TransactionResult result = 2;
+  Error err = 3;
   int32 id = 4;
 }
 
@@ -113,13 +121,11 @@ message TokenAmount {
 
 // Reward information.
 message Reward {
-  // Define fields as necessary. For now, we assume a simple structure.
   string info = 1;
 }
 
 // Status structure.
 message Status {
-  // Using a simple oneof to indicate success (Ok) or an error message.
   oneof result {
     string ok = 1;
     string error_message = 2;

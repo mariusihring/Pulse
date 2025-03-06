@@ -39,24 +39,48 @@ func GetSolanaPrice() (float64, error) {
 }
 
 func GetCoinGeckoTokenPrices(addresses []string) (map[string]string, error) {
-	tokens := strings.Join(addresses, ",")
-	request_url := fmt.Sprintf("https://api.geckoterminal.com/api/v2/simple/networks/solana/token_price/%s", tokens)
-	resp, err := http.Get(request_url)
-	if err != nil {
-		log.Error("Error occured", "Stack", err)
-		return nil, fmt.Errorf("failed to get token prices: %w", err)
+	result := make(map[string]string)
+	const batchSize = 30
+
+	for i := 0; i < len(addresses); i += batchSize {
+		end := i + batchSize
+		if end > len(addresses) {
+			end = len(addresses)
+		}
+		batch := addresses[i:end]
+		tokens := strings.Join(batch, ",")
+		requestURL := fmt.Sprintf("https://api.geckoterminal.com/api/v2/simple/networks/solana/token_price/%s", tokens)
+		log.Info(requestURL)
+
+		resp, err := http.Get(requestURL)
+		if err != nil {
+			log.Error("Error occurred", "Stack", err)
+			return nil, fmt.Errorf("failed to get token prices: %w", err)
+		}
+
+		body, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			log.Error("Error occurred", "Stack", err)
+			return nil, fmt.Errorf("failed to read token prices response: %w", err)
+		}
+
+		var response coingecko_types.PriceResponse
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			log.Error("Error occurred", "Stack", err)
+			return nil, fmt.Errorf("failed to unmarshal token prices response: %w", err)
+		}
+
+		// For each address in the current batch, add its price or default to "0" if missing.
+		for _, address := range batch {
+			if price, ok := response.Data.Attributes.TokenPrices[address]; ok {
+				result[address] = price
+			} else {
+				result[address] = "0"
+			}
+		}
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Error("Error occured", "Stack", err)
-		return nil, fmt.Errorf("failed to read token prices response: %w", err)
-	}
-	var response coingecko_types.PriceResponse
-	err = json.Unmarshal([]byte(body), &response)
-	if err != nil {
-		log.Error("Error occured", "Stack", err)
-		return nil, fmt.Errorf("failed to unmarshal token prices response: %w", err)
-	}
-	return response.Data.Attributes.TokenPrices, nil
+
+	return result, nil
 }
