@@ -2,6 +2,7 @@ import {cn} from "@/lib/utils"
 import {ArrowRight, SendHorizonal} from "lucide-react"
 import {Transaction} from "@/lib/gql/graphql";
 import {parseTransaction} from "@/lib/solana/parse_transaction";
+import Link from "next/link";
 
 interface TransactionListProps {
     transactions: Transaction[]
@@ -16,9 +17,11 @@ const categoryStyles = {
 }
 
 export default function TransactionList({transactions, className}: TransactionListProps) {
+
+    const visibleTransactions = transactions.slice(0, 5);
     return (
         <div className={cn("space-y-1", className)}>
-            {transactions.map((transaction) => {
+            {visibleTransactions.map((transaction) => {
                 const tx = parseTransaction( transaction, "4g7SgYkTTnxhq1tPE1A4kR2UkUZGYLqKt7B12SKomxw3")
                 return (
                     <div
@@ -125,11 +128,11 @@ export default function TransactionList({transactions, className}: TransactionLi
             {/*    </div>*/}
             {/*  </div>*/}
             {/*</div>*/}
-
+            <Link href="/transactions" className="cursor-pointer">
             <button
                 type="button"
                 className={cn(
-                    "w-full flex items-center justify-center gap-2",
+                    "w-full flex items-center justify-center gap-2 cursor-pointer",
                     "py-2 px-3 mt-2 rounded-lg",
                     "text-xs font-medium",
                     "bg-zinc-900 dark:bg-zinc-50",
@@ -138,9 +141,10 @@ export default function TransactionList({transactions, className}: TransactionLi
                     "transition-all duration-200",
                 )}
             >
-                <span>View All Transactions</span>
+               <span>View All Transactions</span>
                 <ArrowRight className="w-3.5 h-3.5"/>
             </button>
+            </Link>
         </div>
     )
 }
