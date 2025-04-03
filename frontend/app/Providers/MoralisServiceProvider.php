@@ -13,13 +13,16 @@ class MoralisServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(Client::class, function ($app) {
-            return new Client([
-                'base_uri' => 'https://solana-gateway.moralis.io',
+            return new Client(
+                [
+                'verify' => false,
+                'base_uri' => 'http://solana-gateway.moralis.io',
                 'headers' => [
                     'Accept' => 'application/json',
-                    'Authorization' => 'Bearer ' . config('services.moralis.key'),
+                    'X-API-Key' => config('services.moralis.key'),
                 ]
-            ]);
+                ]
+            );
         });
     }
 

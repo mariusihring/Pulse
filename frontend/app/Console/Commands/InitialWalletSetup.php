@@ -27,7 +27,7 @@ class InitialWalletSetup extends Command
      */
     public function handle(WalletService $service)
     {
-        $data = $service->initalWalletLoad();
+        $data = $service->loadPortfolio(1, "4g7SgYkTTnxhq1tPE1A4kR2UkUZGYLqKt7B12SKomxw3");
         dd($data);
     }
 }

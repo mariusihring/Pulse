@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('chain_id')->constrained();
             $table->foreignId('token_id')->constrained();
-            $table->foreignId('wallet_id')->constrained();
+            $table->foreignUuid('wallet_id')->constrained();
             $table->string('transaction_hash')->unique();
             $table->string('transaction_type');
             $table->integer('transaction_index');

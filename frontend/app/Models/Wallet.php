@@ -11,6 +11,15 @@ class Wallet extends Model
 {
 
     use HasUuids;
+    protected $fillable = [
+        'address',
+        'name',
+        'chain_token_amount',
+        'value',
+        'chain_id',
+        'user_id',
+        'favorite'
+    ];
 
     public function user() : BelongsTo
     {

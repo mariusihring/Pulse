@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('wallets', function (Blueprint $table)
         {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('address')->unique();
             $table->string('name')->nullable();
             $table->double("chain_token_amount");
