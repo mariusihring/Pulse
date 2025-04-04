@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Token;
+use App\Models\TokenHoldings;
 use App\Models\Wallet;
 use GuzzleHttp\Client;
 
@@ -11,7 +12,7 @@ use GuzzleHttp\Client;
 
 class WalletService
 {
-    public function loadPortfolio(int $userId, string $walletAddress)
+    public function loadPortfolio(string $userId, string $walletAddress)
     {
         $client = app(Client::class);
 
@@ -23,16 +24,37 @@ class WalletService
         $wallet->name = 'My New Wallet';
         $wallet->chain_token_amount = $body['nativeBalance']['solana'];
         $wallet->value = 0;
-        $wallet->chain_id = 1; // set your chain ID
+        $wallet->chain_id = "75f27c0a-3783-45c2-91e8-8da58222bd50";
         $wallet->user_id = $userId;   // set the appropriate user ID
         $wallet->favorite = false;
         $wallet->save();
 
+        $mints = [];
+        foreach ($body['tokens'] as $token) {
+            $mints[] = $token['associatedTokenAddress'];
+        }
+
+        $mintPrices = [];
+        $bodyData = [
+            'addresses' => $mints,
+        ];
+        $priceResp = $client->post("/token/mainnet/prices", [
+            'json' => $bodyData,
+        ]);
+
+        $priceResponse =  json_decode($priceResp->getBody(), true);
+        return $priceResp->getBody();
+        foreach ($priceResponse as $tokenData) {
+            $mint = $tokenData['mint'];
+            $mintPrices[$mint] = $tokenData;
+        }
+        return $mintPrices;
+
         foreach ($body["tokens"] as $token) {
             $t = new Token;
             $t->name = $token["name"];
-            $t->chain_id = 1;
-            $t->current_price = 0;
+            $t->chain_id = "75f27c0a-3783-45c2-91e8-8da58222bd50";
+            $t->current_price = $mintPrices[$token["mint"]]["usdPrice"];
             $t->address = $token["associatedTokenAddress"];
             $t->mint = $token["mint"];
             $t->symbol = $token["symbol"];
@@ -42,6 +64,13 @@ class WalletService
 
 
             //TODO: create tokenholdings here. update table aswell
+            $holding = new TokenHoldings;
+            $holding->user_id = $userId;
+            $holding->token_id = $t->id;
+            $holding->wallet_id = $wallet->id;
+            $holding->amount = $token["amount"];
+            $holding->value = $mintPrices[$token["mint"]]["usdPrice"] * $token["amount"];
+            $holding->save();
         }
 
         return $body;

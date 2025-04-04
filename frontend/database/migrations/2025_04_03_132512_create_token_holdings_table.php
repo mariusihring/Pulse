@@ -12,7 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('token_holdings', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained('users');
+            $table->foreignUuid('wallet_id')->constrained('wallets');
+            $table->foreignUuid('token_id')->constrained('tokens');
+            $table->decimal('amount');
+            $table->decimal('value');
             $table->timestamps();
         });
     }

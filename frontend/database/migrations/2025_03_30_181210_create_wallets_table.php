@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->double("chain_token_amount");
             $table->double('value');
-            $table->foreignId('chain_id');
-            $table->foreignId('user_id');
+            $table->foreignUuid('chain_id');
+            $table->foreignUuid('user_id');
             $table->boolean('favorite')->default(false);
             $table->timestamps();
         }

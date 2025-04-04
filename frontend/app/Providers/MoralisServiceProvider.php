@@ -16,9 +16,8 @@ class MoralisServiceProvider extends ServiceProvider
             return new Client(
                 [
                 'verify' => false,
-                'base_uri' => 'http://solana-gateway.moralis.io',
+                'base_uri' => 'https://solana-gateway.moralis.io',
                 'headers' => [
-                    'Accept' => 'application/json',
                     'X-API-Key' => config('services.moralis.key'),
                 ]
                 ]

@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tokens', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('chain_id')->constrained();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('chain_id')->constrained();
             $table->string('name');
             $table->decimal('current_price');
             $table->string('logo');

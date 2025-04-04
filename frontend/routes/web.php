@@ -9,9 +9,16 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+
+        $user = Auth::user()->load([
+                'wallets',
+                'tokenHoldings',
+                'tokenHoldings.token'
+            ]
+        );
+        return Inertia::render('dashboard', compact('user'));
     })->name('dashboard');
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
