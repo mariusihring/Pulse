@@ -11,15 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tokens', function (Blueprint $table) {
+        Schema::create('wallet_snapshots', function (Blueprint $table) {
             $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->foreignUuid('chain_id')->constrained();
-            $table->string('name');
-            $table->decimal('current_price');
-            $table->string('logo');
-            $table->string('symbol');
-            $table->string('address')->unique();
-            $table->string('mint')->unique();
+            $table->foreignUuid('wallet_id')->references('id')->on('wallets')->onDelete('cascade');
+            $table->decimal('value');
             $table->timestamps();
         });
     }
@@ -29,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tokens');
+        Schema::dropIfExists('wallet_snapshots');
     }
 };

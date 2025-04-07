@@ -1,22 +1,51 @@
 import { Badge } from '@/components/ui/badge';
 import {Progress} from "@/components/ui/progress"
 import { TrendingUpIcon, WalletIcon, ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+
 
 export default function DashboardOverview ({data}) {
-    console.log(data)
     const sum = data.wallets.flatMap(wallet => wallet.value)
     const formattedBalance = `$ ${parseFloat(sum).toFixed(2)}`
     const [hideBalance, setHideBalance] = useState(false)
+    const [dailyChange, setDailyChange] = useState(0);
+    const [monthlyChange, setMonthlyChange] = useState(0);
+    useEffect(() => {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayDate = yesterday.toISOString().split('T')[0];
+
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        const monthAgoDate = oneMonthAgo.toISOString().split('T')[0];
+        const yesterdaySnapshot = data.wallets[0].snapshots.find(snapshot =>
+            snapshot.created_at.startsWith(yesterdayDate)
+        );
+
+        const monthAgoSnapshot = data.wallets[0].snapshots.find(snapshot =>
+            snapshot.created_at.startsWith(monthAgoDate)
+        );
+        if (yesterdaySnapshot) {
+             const yesterdayValue = parseFloat(yesterdaySnapshot.value);
+             setDailyChange((data.wallets[0].value / yesterdayValue) * 100 - 100)
+        }
+        if (monthAgoSnapshot) {
+             const monthAgoValue = parseFloat(monthAgoSnapshot.value);
+             setMonthlyChange( ( data.wallets[0].value / monthAgoValue) * 100 - 100)
+        }
+
+    }, []);
+
     const userData = {
-        dailyChange: 2,
+        dailyChange: dailyChange,
         wallets: data.wallets,
-        monthlyChange: 3.14,
+        monthlyChange: monthlyChange,
         current_value: sum,
-        goal: 1000000
+        goal: 100000
     }
 
-    const goalPercentage = (userData.current_value / userData.goal) * 100
+    const goalPercentage = Math.min((userData.current_value / userData.goal) * 100, 100)
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("en-US", {
             style: "currency",
@@ -36,7 +65,7 @@ export default function DashboardOverview ({data}) {
                             className={`flex items-center gap-1 ${userData.dailyChange >= 0 ? "text-green-400 border-green-800" : "text-red-400 border-red-800"}`}
                         >
                             {userData.dailyChange >= 0 ? <ArrowUpIcon size={12} /> : <ArrowDownIcon size={12} />}
-                            {Math.abs(userData.dailyChange)}% today
+                            {Math.abs(Number(userData.dailyChange.toFixed(0)))}% today
                         </Badge>
                     </div>
                 </div>
@@ -58,7 +87,7 @@ export default function DashboardOverview ({data}) {
                         <h4 className="text-sm font-medium text-zinc-400">Monthly</h4>
                     </div>
                     <div className="flex items-center gap-2">
-                        <p className="text-2xl font-semibold">{userData.monthlyChange}%</p>
+                        <p className="text-2xl font-semibold">{userData.monthlyChange.toFixed(2)}%</p>
                         <span className={userData.monthlyChange >= 0 ? "text-green-400" : "text-red-400"}>
                         {userData.monthlyChange >= 0 ? "↑" : "↓"}
                       </span>
@@ -73,10 +102,7 @@ export default function DashboardOverview ({data}) {
                       {formatCurrency(userData.current_value)} / {formatCurrency(userData.goal)}
                     </span>
                 </div>
-                <Progress
-                    value={goalPercentage}
-                    className="h-2 bg-zinc-800"
-                />
+                <Progress value={goalPercentage} className="h-2" />
             </div>
         </div>
     )

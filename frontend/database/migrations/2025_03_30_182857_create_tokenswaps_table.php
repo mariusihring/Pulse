@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tokenswaps', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->foreignUuid('chain_id')->constrained();
             $table->foreignUuid('token_id')->constrained();
             $table->foreignUuid('wallet_id')->constrained();

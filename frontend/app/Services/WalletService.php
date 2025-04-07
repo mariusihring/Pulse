@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Token;
 use App\Models\TokenHoldings;
 use App\Models\Wallet;
+use App\Models\WalletSnapshot;
 use GuzzleHttp\Client;
 
 // Maybe check here for more good apis
@@ -73,6 +74,11 @@ class WalletService
         }
         $wallet->value = $walletValue;
         $wallet->save();
+
+        $snapshot = new WalletSnapshot;
+        $snapshot->value = $walletValue;
+        $snapshot->wallet_id = $wallet->id;
+        $snapshot->save();
         return $body;
 
     }

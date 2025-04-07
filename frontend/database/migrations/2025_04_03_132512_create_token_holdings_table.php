@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('token_holdings', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->constrained('users');
-            $table->foreignUuid('wallet_id')->constrained('wallets');
-            $table->foreignUuid('token_id')->constrained('tokens');
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->foreignUuid('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignUuid('wallet_id')->references('id')->on('wallets')->onDelete('cascade');
+            $table->foreignUuid('token_id')->references('id')->on('tokens')->onDelete('cascade');
             $table->decimal('amount');
             $table->decimal('value');
             $table->timestamps();

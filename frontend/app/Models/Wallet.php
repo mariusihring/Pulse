@@ -42,6 +42,11 @@ class Wallet extends Model
         return $this->hasMany(TokenSwap::class);
     }
 
+    public function snapshots(): HasMany
+    {
+        return $this->hasMany(WalletSnapshot::class);
+    }
+
     public function chain(): BelongsTo
     {
         return $this->belongsTo(Chain::class);
