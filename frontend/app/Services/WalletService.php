@@ -15,7 +15,7 @@ class WalletService
     public function loadPortfolio(string $userId, string $walletAddress)
     {
         $client = app(Client::class);
-
+        $walletValue = 0;
         $response = $client->get(sprintf("/account/mainnet/%s/portfolio", $walletAddress));
         $body =  json_decode($response->getBody(), true);
 
@@ -31,7 +31,7 @@ class WalletService
 
         $mints = [];
         foreach ($body['tokens'] as $token) {
-            $mints[] = $token['associatedTokenAddress'];
+            $mints[] = $token['mint'];
         }
 
         $mintPrices = [];
@@ -43,12 +43,10 @@ class WalletService
         ]);
 
         $priceResponse =  json_decode($priceResp->getBody(), true);
-        return $priceResp->getBody();
         foreach ($priceResponse as $tokenData) {
-            $mint = $tokenData['mint'];
+            $mint = $tokenData['tokenAddress'];
             $mintPrices[$mint] = $tokenData;
         }
-        return $mintPrices;
 
         foreach ($body["tokens"] as $token) {
             $t = new Token;
@@ -70,9 +68,11 @@ class WalletService
             $holding->wallet_id = $wallet->id;
             $holding->amount = $token["amount"];
             $holding->value = $mintPrices[$token["mint"]]["usdPrice"] * $token["amount"];
+            $walletValue +=  $mintPrices[$token["mint"]]["usdPrice"] * $token["amount"];
             $holding->save();
         }
-
+        $wallet->value = $walletValue;
+        $wallet->save();
         return $body;
 
     }
