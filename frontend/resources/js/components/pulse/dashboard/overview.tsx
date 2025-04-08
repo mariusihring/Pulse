@@ -18,7 +18,11 @@ export default function DashboardOverview ({data}) {
         return null
     }
     const sum = summing(data.wallets.flatMap(wallet => wallet.value)) || 0
-    const formattedBalance = `$ ${parseFloat(sum).toFixed(2)}` || 0
+    let formattedBalance = `$ ${parseFloat(sum).toFixed(2)}` || 0
+    useEffect(() => {
+        formattedBalance = `$ ${parseFloat(sum).toFixed(2)}` || 0
+    }, [sum]);
+
     const [hideBalance, setHideBalance] = useState(false)
     const [dailyChange, setDailyChange] = useState(0);
     const [monthlyChange, setMonthlyChange] = useState(0);
@@ -65,7 +69,6 @@ export default function DashboardOverview ({data}) {
             maximumFractionDigits: 2,
         }).format(amount)
     }
-    console.log(sum)
     return (
         <div className="space-y-6 p-4 h-full">
             <div>

@@ -13,6 +13,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $user = Auth::user()->load([
                 'wallets',
                 'wallets.snapshots',
+                'wallets.tokenswaps',
                 'tokenHoldings',
                 'tokenHoldings.token'
             ]
