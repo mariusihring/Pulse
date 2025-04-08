@@ -3,11 +3,22 @@ import {Progress} from "@/components/ui/progress"
 import { TrendingUpIcon, WalletIcon, ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+function summing (data: number[]) {
+    let val = 0
+    for (const item in data) {
+        val += data[item];
+    }
+    return val
+}
 
 
 export default function DashboardOverview ({data}) {
-    const sum = data.wallets.flatMap(wallet => wallet.value)
-    const formattedBalance = `$ ${parseFloat(sum).toFixed(2)}`
+    if (data.wallets.length === 0) {
+        //TODO: placeholder
+        return null
+    }
+    const sum = summing(data.wallets.flatMap(wallet => wallet.value)) || 0
+    const formattedBalance = `$ ${parseFloat(sum).toFixed(2)}` || 0
     const [hideBalance, setHideBalance] = useState(false)
     const [dailyChange, setDailyChange] = useState(0);
     const [monthlyChange, setMonthlyChange] = useState(0);
@@ -54,6 +65,7 @@ export default function DashboardOverview ({data}) {
             maximumFractionDigits: 2,
         }).format(amount)
     }
+    console.log(sum)
     return (
         <div className="space-y-6 p-4 h-full">
             <div>
@@ -62,9 +74,9 @@ export default function DashboardOverview ({data}) {
                     <div className="flex items-center">
                         <Badge
                             variant="outline"
-                            className={`flex items-center gap-1 ${userData.dailyChange >= 0 ? "text-green-400 border-green-800" : "text-red-400 border-red-800"}`}
+                            className={`flex items-center gap-1 ${Number(Math.abs(Number(userData.dailyChange)).toFixed(4)) === 0 ? null : userData.dailyChange > 0 ? "text-green-400 border-green-800" : "text-red-400 border-red-800"}`}
                         >
-                            {userData.dailyChange >= 0 ? <ArrowUpIcon size={12} /> : <ArrowDownIcon size={12} />}
+                            {Number(Math.abs(Number(userData.dailyChange)).toFixed(4)) === 0 ? null : userData.dailyChange > 0 ? <ArrowUpIcon size={12} /> : <ArrowDownIcon size={12}/>}
                             {Math.abs(Number(userData.dailyChange.toFixed(0)))}% today
                         </Badge>
                     </div>

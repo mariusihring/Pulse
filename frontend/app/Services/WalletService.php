@@ -13,7 +13,7 @@ use GuzzleHttp\Client;
 
 class WalletService
 {
-    public function loadPortfolio(string $userId, string $walletAddress)
+    public function loadPortfolio(string $userId, string $walletAddress, string $chainId)
     {
         $client = app(Client::class);
         $walletValue = 0;
@@ -25,7 +25,7 @@ class WalletService
         $wallet->name = 'My New Wallet';
         $wallet->chain_token_amount = $body['nativeBalance']['solana'];
         $wallet->value = 0;
-        $wallet->chain_id = "75f27c0a-3783-45c2-91e8-8da58222bd50";
+        $wallet->chain_id = $chainId;
         $wallet->user_id = $userId;   // set the appropriate user ID
         $wallet->favorite = false;
         $wallet->save();
@@ -52,7 +52,7 @@ class WalletService
         foreach ($body["tokens"] as $token) {
             $t = new Token;
             $t->name = $token["name"];
-            $t->chain_id = "75f27c0a-3783-45c2-91e8-8da58222bd50";
+            $t->chain_id = $chainId;
             $t->current_price = $mintPrices[$token["mint"]]["usdPrice"];
             $t->address = $token["associatedTokenAddress"];
             $t->mint = $token["mint"];

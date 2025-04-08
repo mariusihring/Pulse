@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignUuid('chain_id')->constrained();
             $table->string('name');
             $table->decimal('current_price');
-            $table->string('logo');
+            $table->string('logo')->nullable();
             $table->string('symbol');
             $table->string('address')->unique();
             $table->string('mint')->unique();
