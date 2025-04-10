@@ -27,8 +27,9 @@ class InitialWalletSetup extends Command
      */
     public function handle(WalletService $service)
     {
-//        $data = $service->loadPortfolio("019614bf-2cac-71f9-acfb-ed2b695b57c0", "8K2MYNbuN7LvSM5132gAQXnth7oyeYLmkXcCcBm68Fbm", "7bcb8fd8-4c1f-4d09-9144-8e0ea9ca3d0e");
-        $data = $service->loadPortfolio("019614bf-2cac-71f9-acfb-ed2b695b57c0", "4g7SgYkTTnxhq1tPE1A4kR2UkUZGYLqKt7B12SKomxw3", "7bcb8fd8-4c1f-4d09-9144-8e0ea9ca3d0e");
+//        $data = $service->loadPortfolio("01961ec3-cfc9-7395-947c-5517b9404507", "8K2MYNbuN7LvSM5132gAQXnth7oyeYLmkXcCcBm68Fbm", "bbdebcf5-3439-4d9c-a9e6-8e54f1924456");
+//        $data = $service->loadPortfolio("01961ec3-cfc9-7395-947c-5517b9404507", "4g7SgYkTTnxhq1tPE1A4kR2UkUZGYLqKt7B12SKomxw3", "bbdebcf5-3439-4d9c-a9e6-8e54f1924456");
+        $data = $service->getTokenSwaps("AghsmY94TE5NdCqk7FZKPW78gzQ4PpEmnKVFRao5yj9o");
         //TODO: fetch transactions here
         dd($data);
     }

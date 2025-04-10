@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import DashboardOverview from '@/components/pulse/dashboard/overview';
 import TokenPieChart from '@/components/pulse/dashboard/tokenpiechart';
+import { SwapTable } from '@/components/pulse/dashboard/Tokenswaptable';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -15,7 +16,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard({user}) {
-    console.log(user)
+    const allTokenSwaps = user.wallets.reduce((accumulator, wallet) => {
+        return accumulator.concat(wallet.tokenswaps);
+    }, []);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
@@ -37,8 +40,12 @@ export default function Dashboard({user}) {
                     </div>
 
                 </div>
-                <div className="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border md:min-h-min">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+                <div className="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border md:min-h-min p-4">
+                    <Suspense fallback={
+                        <Skeleton className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20 animate-pulse" />
+                    }>
+                        <SwapTable swaps={allTokenSwaps} />
+                    </Suspense>
                 </div>
             </div>
         </AppLayout>
