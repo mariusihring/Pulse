@@ -22,7 +22,7 @@ class WalletService
         $response = $client->get(sprintf("/account/mainnet/%s/portfolio", $walletAddress));
         $body =  json_decode($response->getBody(), true);
 
-        $wallet = new Wallet;
+        $wallet = new Wallet();
         $wallet->address = $walletAddress;
         $wallet->name = 'My New Wallet';
         $wallet->chain_token_amount = $body['nativeBalance']['solana'];
@@ -41,9 +41,12 @@ class WalletService
         $bodyData = [
             'addresses' => $mints,
         ];
-        $priceResp = $client->post("/token/mainnet/prices", [
+        $priceResp = $client->post(
+            "/token/mainnet/prices",
+            [
             'json' => $bodyData,
-        ]);
+            ]
+        );
 
         $priceResponse =  json_decode($priceResp->getBody(), true);
         foreach ($priceResponse as $tokenData) {
@@ -52,7 +55,7 @@ class WalletService
         }
 
         foreach ($body["tokens"] as $token) {
-            $t = new Token;
+            $t = new Token();
             $t->name = $token["name"];
             $t->chain_id = $chainId;
             $t->current_price = $mintPrices[$token["mint"]]["usdPrice"];
@@ -65,7 +68,7 @@ class WalletService
 
 
             //TODO: create tokenholdings here. update table aswell
-            $holding = new TokenHoldings;
+            $holding = new TokenHoldings();
             $holding->user_id = $userId;
             $holding->token_id = $t->id;
             $holding->wallet_id = $wallet->id;
@@ -77,7 +80,7 @@ class WalletService
         $wallet->value = $walletValue;
         $wallet->save();
 
-        $snapshot = new WalletSnapshot;
+        $snapshot = new WalletSnapshot();
         $snapshot->value = $walletValue;
         $snapshot->wallet_id = $wallet->id;
         $snapshot->save();
@@ -85,9 +88,15 @@ class WalletService
 
     }
 
-    public function refreshWallet(string $walletAddress, $lastRefresh)
+    public function refreshWallet(string $walletAddress)
     {
-        todo("do this");
+
+        $wallet = Wallet::where('address', $walletAddress)->first();
+        if (!$wallet) {
+            throw new \Exception("Wallet with address {$walletAddress} not found.");
+        }
+        $wallet->refresh();
+        return $wallet;
     }
 
 
@@ -99,64 +108,56 @@ class WalletService
 
     public function getTokenSwaps(string $walletAddress)
     {
-        // Fetch wallet from the database
         $wallet = DB::table("wallets")->where("address", $walletAddress)->first();
         if (!$wallet) {
             throw new \Exception("Wallet with address {$walletAddress} not found.");
         }
 
-        // Make API call to get token swaps
-        $client = app(Client::class); // Assuming Client is GuzzleHttp\Client or similar
+        $client = app(Client::class);
         $swapsResponse = $client->get(sprintf("/account/mainnet/%s/swaps?order=DESC", $walletAddress));
         $swaps = json_decode($swapsResponse->getBody(), true);
 
-        // Check if result exists in the response
         if (!isset($swaps['result']) || empty($swaps['result'])) {
-            return []; // Return empty array if no swaps found
+            return [];
         }
 
         $createdSwaps = [];
 
-        // Process each swap in the result
         foreach ($swaps['result'] as $swapData) {
-            // Determine which token data to use (bought or sold) based on baseToken
             $tokenData = $swapData['bought']['address'] === $swapData['baseToken']
                 ? $swapData['bought']
                 : $swapData['sold'];
 
-            // Check if the token exists by address or mint
             $token = Token::where('address', $swapData['baseToken'])
-                ->orWhere('mint', $tokenData['address']) // Use address as mint
+                ->orWhere('mint', $tokenData['address'])
                 ->first();
 
-            // If token doesn't exist, create it
             if (!$token) {
                 $token = Token::firstOrCreate(
-                    ['address' => $swapData['baseToken']], // Unique check on address
+                    ['address' => $swapData['baseToken']],
                     [
-                        'chain_id' => 'bbdebcf5-3439-4d9c-a9e6-8e54f1924456', // Hardcoded; adjust as needed
+                        'chain_id' => 'bbdebcf5-3439-4d9c-a9e6-8e54f1924456',
                         'name' => $tokenData['name'],
                         'current_price' => $tokenData['usdPrice'],
                         'logo' => $tokenData['logo'] ?? null,
                         'symbol' => $tokenData['symbol'],
-                        'mint' => $tokenData['address'], // Mint is the same as address in this case
+                        'mint' => $tokenData['address'],
                     ]
                 );
             }
 
-            // Create or update the TokenSwap record
             $tokenSwap = TokenSwap::updateOrCreate(
                 ['transaction_hash' => $swapData['transactionHash']],
                 [
-                    'chain_id' => 'bbdebcf5-3439-4d9c-a9e6-8e54f1924456', // Hardcoded for now
-                    'token_id' => $token->id, // Use the token's UUID
-                    'wallet_id' => $wallet->id, // Assuming wallet table has an 'id' column as UUID
+                    'chain_id' => 'bbdebcf5-3439-4d9c-a9e6-8e54f1924456',
+                    'token_id' => $token->id,
+                    'wallet_id' => $wallet->id,
                     'transaction_hash' => $swapData['transactionHash'],
                     'transaction_type' => $swapData['transactionType'],
                     'transaction_index' => $swapData['transactionIndex'],
                     'sub_category' => $swapData['subCategory'] ?? null,
                     'block_timestamp' => $swapData['blockTimestamp'],
-                    'block_number' => $swapData['blockNumber'] ?: 0, // Default to 0 if empty
+                    'block_number' => $swapData['blockNumber'] ?: 0,
                     'wallet_address' => $swapData['walletAddress'],
                     'pair_address' => $swapData['pairAddress'],
                     'pair_label' => $swapData['pairLabel'],

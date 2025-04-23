@@ -30,7 +30,7 @@ interface SwapTableProps {
 
 export function SwapTable({ swaps = [] }: SwapTableProps) {
     const [globalFilter, setGlobalFilter] = useState("")
-    const data = Array.isArray(swaps) ? swaps : []
+    const data = Array.isArray(swaps) ? swaps.slice(0, 9) : []
 
     const table = useReactTable({
         data,
@@ -64,7 +64,7 @@ export function SwapTable({ swaps = [] }: SwapTableProps) {
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 pt-4">
             <Input
                 placeholder="Search by type or pair (e.g., buy, Butthole/SOL)..."
                 value={globalFilter}
@@ -92,11 +92,12 @@ export function SwapTable({ swaps = [] }: SwapTableProps) {
                                     "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
                                 )}
                             >
-                                <Icon className="w-4 h-4" />
+                                {/*<Icon className="w-4 h-4" />*/}
+                                <img src={swap.exchange_logo} className="w-4 h-4" />
                             </div>
                             <div className="flex-1 flex items-center justify-between min-w-0">
                                 <div className="space-y-0.5">
-                                    <h3 className="text-xs font-medium text-zinc-900 dark:text-zinc-100">{swap.pair_label}</h3>
+                                    <h3 className="text-xs font-medium text-zinc-900 dark:text-zinc-100">Exchange {swap.sold.symbol} for {swap.bought.symbol}</h3>
                                     <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
                                         {new Date(swap.block_timestamp).toLocaleString()}
                                     </p>

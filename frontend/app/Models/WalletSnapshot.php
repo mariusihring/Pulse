@@ -7,5 +7,4 @@ use Illuminate\Database\Eloquent\Model;
 
 class WalletSnapshot extends Model
 {
-    use HasUuids;
-}
+    use HasUuids;[[\\]]
