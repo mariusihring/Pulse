@@ -11,6 +11,10 @@ class Chain extends Model
 {
 
     use HasFactory, HasUuids;
+    protected $fillable = [
+        "name"
+    ];
+
     public function tokens(): HasMany
     {
         return $this->hasMany(Token::class);

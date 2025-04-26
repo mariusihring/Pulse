@@ -21,7 +21,7 @@ class Wallet extends Model
         'chain_id',
         'user_id',
         'favorite'
-    ];
+   ];
 
     public function user(): BelongsTo
     {

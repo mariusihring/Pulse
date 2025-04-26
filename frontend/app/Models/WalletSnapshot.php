@@ -7,4 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class WalletSnapshot extends Model
 {
-    use HasUuids;[[\\]]
+    use HasUuids;
+
+    protected $fillable = [
+        "wallet_id",
+        "value",
+
+    ];
+}

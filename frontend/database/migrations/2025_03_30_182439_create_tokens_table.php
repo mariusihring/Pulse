@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->foreignUuid('chain_id')->constrained();
             $table->string('name');
-            $table->decimal('current_price');
+            $table->decimal('current_price', total:12,places: 6);
             $table->string('logo')->nullable();
             $table->string('symbol');
             $table->string('address')->unique();

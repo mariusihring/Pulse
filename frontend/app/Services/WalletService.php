@@ -106,7 +106,7 @@ class WalletService
         todo("do this");
     }
 
-    public function getTokenSwaps(string $walletAddress)
+    public function getTokenSwaps(string $walletAddress, string $chainId)
     {
         $wallet = DB::table("wallets")->where("address", $walletAddress)->first();
         if (!$wallet) {
@@ -136,7 +136,7 @@ class WalletService
                 $token = Token::firstOrCreate(
                     ['address' => $swapData['baseToken']],
                     [
-                        'chain_id' => 'bbdebcf5-3439-4d9c-a9e6-8e54f1924456',
+                        'chain_id' => $chainId,
                         'name' => $tokenData['name'],
                         'current_price' => $tokenData['usdPrice'],
                         'logo' => $tokenData['logo'] ?? null,
@@ -149,7 +149,7 @@ class WalletService
             $tokenSwap = TokenSwap::updateOrCreate(
                 ['transaction_hash' => $swapData['transactionHash']],
                 [
-                    'chain_id' => 'bbdebcf5-3439-4d9c-a9e6-8e54f1924456',
+                    'chain_id' => $chainId,
                     'token_id' => $token->id,
                     'wallet_id' => $wallet->id,
                     'transaction_hash' => $swapData['transactionHash'],

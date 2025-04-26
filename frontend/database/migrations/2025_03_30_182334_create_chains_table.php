@@ -8,8 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     */
-    public function up(): void
+     */ public function up(): void
     {
         Schema::create('chains', function (Blueprint $table) {
             $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
