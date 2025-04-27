@@ -9,192 +9,229 @@ use App\Models\Wallet;
 use App\Models\WalletSnapshot;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 // Maybe check here for more good apis
 // https://github.com/public-apis/public-apis?tab=readme-ov-file#cryptocurrency
 
 class WalletService
 {
-    public function loadPortfolio(string $userId, string $walletAddress, string $chainId)
+    private Client $client;
+
+    public function __construct(Client $client)
     {
-        $client = app(Client::class);
+        $this->client = $client;
+    }
+
+    public function loadPortfolio(string $userId, string $walletAddress, string $chainId): array
+    {
+        $portfolioData = $this->fetchPortfolioData($walletAddress);
+        $wallet = $this->createOrUpdateWallet($userId, $walletAddress, $chainId, $portfolioData);
+        
+        $mintPrices = $this->fetchTokenPrices($portfolioData['tokens']);
+        $walletValue = $this->processTokens($portfolioData['tokens'], $mintPrices, $wallet, $userId);
+        
+        $this->updateWalletValue($wallet, $walletValue);
+        $this->createWalletSnapshot($wallet, $walletValue);
+
+        return $portfolioData;
+    }
+
+    private function fetchPortfolioData(string $walletAddress): array
+    {
+        $response = $this->client->get(sprintf("/account/mainnet/%s/portfolio", $walletAddress));
+        return json_decode($response->getBody(), true);
+    }
+
+    private function createOrUpdateWallet(string $userId, string $walletAddress, string $chainId, array $portfolioData): Wallet
+    {
+        return Wallet::updateOrCreate(
+            ['address' => $walletAddress],
+            [
+                'name' => 'My New Wallet',
+                'chain_token_amount' => $portfolioData['nativeBalance']['solana'],
+                'value' => 0,
+                'chain_id' => $chainId,
+                'user_id' => $userId,
+                'favorite' => false,
+            ]
+        );
+    }
+
+    private function fetchTokenPrices(array $tokens): array
+    {
+        $mints = array_column($tokens, 'mint');
+        $response = $this->client->post('/token/mainnet/prices', [
+            'json' => ['addresses' => $mints],
+        ]);
+
+        $prices = json_decode($response->getBody(), true);
+        return array_column($prices, null, 'tokenAddress');
+    }
+
+    private function processTokens(array $tokens, array $mintPrices, Wallet $wallet, string $userId): float
+    {
         $walletValue = 0;
-        $response = $client->get(sprintf("/account/mainnet/%s/portfolio", $walletAddress));
-        $body =  json_decode($response->getBody(), true);
 
-        $wallet = new Wallet();
-        $wallet->address = $walletAddress;
-        $wallet->name = 'My New Wallet';
-        $wallet->chain_token_amount = $body['nativeBalance']['solana'];
-        $wallet->value = 0;
-        $wallet->chain_id = $chainId;
-        $wallet->user_id = $userId;   // set the appropriate user ID
-        $wallet->favorite = false;
-        $wallet->save();
-
-        $mints = [];
-        foreach ($body['tokens'] as $token) {
-            $mints[] = $token['mint'];
+        foreach ($tokens as $token) {
+            $tokenModel = $this->createOrUpdateToken($token, $mintPrices[$token['mint']]);
+            $tokenValue = $this->createTokenHolding($token, $tokenModel, $wallet, $userId);
+            $walletValue += $tokenValue;
         }
 
-        $mintPrices = [];
-        $bodyData = [
-            'addresses' => $mints,
-        ];
-        $priceResp = $client->post(
-            "/token/mainnet/prices",
+        return $walletValue;
+    }
+
+    private function createOrUpdateToken(array $tokenData, array $priceData): Token
+    {
+        return Token::updateOrCreate(
+            ['mint' => $tokenData['mint']],
             [
-            'json' => $bodyData,
+                'name' => $tokenData['name'],
+                'chain_id' => $tokenData['chain_id'] ?? null,
+                'current_price' => $priceData['usdPrice'],
+                'address' => $tokenData['associatedTokenAddress'],
+                'symbol' => $tokenData['symbol'],
+                'logo' => $tokenData['logo'] ?? null,
+            ]
+        );
+    }
+
+    private function createTokenHolding(array $token, Token $tokenModel, Wallet $wallet, string $userId): float
+    {
+        $value = $token['amount'] * $tokenModel->current_price;
+        
+        TokenHoldings::updateOrCreate(
+            [
+                'user_id' => $userId,
+                'token_id' => $tokenModel->id,
+                'wallet_id' => $wallet->id,
+            ],
+            [
+                'amount' => $token['amount'],
+                'value' => $value,
             ]
         );
 
-        $priceResponse =  json_decode($priceResp->getBody(), true);
-        foreach ($priceResponse as $tokenData) {
-            $mint = $tokenData['tokenAddress'];
-            $mintPrices[$mint] = $tokenData;
-        }
-
-        foreach ($body["tokens"] as $token) {
-            $t = new Token();
-            $t->name = $token["name"];
-            $t->chain_id = $chainId;
-            $t->current_price = $mintPrices[$token["mint"]]["usdPrice"];
-            $t->address = $token["associatedTokenAddress"];
-            $t->mint = $token["mint"];
-            $t->symbol = $token["symbol"];
-            $t->logo = $token["logo"];
-            $t->save();
-
-
-
-            //TODO: create tokenholdings here. update table aswell
-            $holding = new TokenHoldings();
-            $holding->user_id = $userId;
-            $holding->token_id = $t->id;
-            $holding->wallet_id = $wallet->id;
-            $holding->amount = $token["amount"];
-            $holding->value = $mintPrices[$token["mint"]]["usdPrice"] * $token["amount"];
-            $walletValue +=  $mintPrices[$token["mint"]]["usdPrice"] * $token["amount"];
-            $holding->save();
-        }
-        $wallet->value = $walletValue;
-        $wallet->save();
-
-        $snapshot = new WalletSnapshot();
-        $snapshot->value = $walletValue;
-        $snapshot->wallet_id = $wallet->id;
-        $snapshot->save();
-        return $body;
-
+        return $value;
     }
 
-    public function refreshWallet(string $walletAddress)
+    private function updateWalletValue(Wallet $wallet, float $value): void
     {
+        $wallet->update(['value' => $value]);
+    }
 
-        $wallet = Wallet::where('address', $walletAddress)->first();
-        if (!$wallet) {
-            throw new \Exception("Wallet with address {$walletAddress} not found.");
-        }
+    private function createWalletSnapshot(Wallet $wallet, float $value): void
+    {
+        WalletSnapshot::create([
+            'value' => $value,
+            'wallet_id' => $wallet->id,
+        ]);
+    }
+
+    public function refreshWallet(string $walletAddress): Wallet
+    {
+        $wallet = Wallet::where('address', $walletAddress)->firstOrFail();
         $wallet->refresh();
         return $wallet;
     }
 
+    public function getTokenSwaps(string $walletAddress, string $chainId): array
+    {
+        $wallet = Wallet::where('address', $walletAddress)->firstOrFail();
+        $swaps = $this->fetchTokenSwaps($walletAddress);
+        
+        if (empty($swaps['result'])) {
+            return [];
+        }
+
+        return $this->processTokenSwaps($swaps['result'], $wallet, $chainId);
+    }
+
+    private function fetchTokenSwaps(string $walletAddress): array
+    {
+        $response = $this->client->get(sprintf("/account/mainnet/%s/swaps?order=DESC", $walletAddress));
+        return json_decode($response->getBody(), true);
+    }
+
+    private function processTokenSwaps(array $swaps, Wallet $wallet, string $chainId): array
+    {
+        $createdSwaps = [];
+
+        foreach ($swaps as $swapData) {
+            $token = $this->getOrCreateTokenForSwap($swapData, $chainId);
+            $createdSwaps[] = $this->createTokenSwap($swapData, $token, $wallet, $chainId);
+        }
+
+        return $createdSwaps;
+    }
+
+    private function getOrCreateTokenForSwap(array $swapData, string $chainId): Token
+    {
+        $tokenData = $swapData['bought']['address'] === $swapData['baseToken'] 
+            ? $swapData['bought'] 
+            : $swapData['sold'];
+
+        return Token::firstOrCreate(
+            ['address' => $swapData['baseToken']],
+            [
+                'chain_id' => $chainId,
+                'name' => $tokenData['name'],
+                'current_price' => $tokenData['usdPrice'],
+                'logo' => $tokenData['logo'] ?? null,
+                'symbol' => $tokenData['symbol'],
+                'mint' => $tokenData['address'],
+            ]
+        );
+    }
+
+    private function createTokenSwap(array $swapData, Token $token, Wallet $wallet, string $chainId): TokenSwap
+    {
+        return TokenSwap::updateOrCreate(
+            ['transaction_hash' => $swapData['transactionHash']],
+            [
+                'chain_id' => $chainId,
+                'token_id' => $token->id,
+                'wallet_id' => $wallet->id,
+                'transaction_hash' => $swapData['transactionHash'],
+                'transaction_type' => $swapData['transactionType'],
+                'transaction_index' => $swapData['transactionIndex'],
+                'sub_category' => $swapData['subCategory'] ?? null,
+                'block_timestamp' => $swapData['blockTimestamp'],
+                'block_number' => $swapData['blockNumber'] ?: 0,
+                'wallet_address' => $swapData['walletAddress'],
+                'pair_address' => $swapData['pairAddress'],
+                'pair_label' => $swapData['pairLabel'],
+                'exchange_address' => $swapData['exchangeAddress'],
+                'exchange_name' => $swapData['exchangeName'],
+                'exchange_logo' => $swapData['exchangeLogo'] ?? null,
+                'base_token' => $swapData['baseToken'],
+                'quote_token' => $swapData['quoteToken'],
+                'bought' => $this->formatTokenData($swapData['bought']),
+                'sold' => $this->formatTokenData($swapData['sold']),
+                'base_quote_price' => $swapData['baseQuotePrice'],
+                'total_value_usd' => $swapData['totalValueUsd'],
+            ]
+        );
+    }
+
+    private function formatTokenData(array $token): array
+    {
+        return [
+            'address' => $token['address'],
+            'amount' => $token['amount'],
+            'usdPrice' => $token['usdPrice'],
+            'usdAmount' => $token['usdAmount'],
+            'symbol' => $token['symbol'],
+            'logo' => $token['logo'] ?? null,
+            'name' => $token['name'],
+            'tokenType' => $token['tokenType'],
+        ];
+    }
 
     public function getTransactions(string $walletAddress)
     {
         //TODO: we get transactions and if they have tokenswap as type we add a foreign key to the transaction so we can load the swap
         todo("do this");
     }
-
-    public function getTokenSwaps(string $walletAddress, string $chainId)
-    {
-        $wallet = DB::table("wallets")->where("address", $walletAddress)->first();
-        if (!$wallet) {
-            throw new \Exception("Wallet with address {$walletAddress} not found.");
-        }
-
-        $client = app(Client::class);
-        $swapsResponse = $client->get(sprintf("/account/mainnet/%s/swaps?order=DESC", $walletAddress));
-        $swaps = json_decode($swapsResponse->getBody(), true);
-
-        if (!isset($swaps['result']) || empty($swaps['result'])) {
-            return [];
-        }
-
-        $createdSwaps = [];
-
-        foreach ($swaps['result'] as $swapData) {
-            $tokenData = $swapData['bought']['address'] === $swapData['baseToken']
-                ? $swapData['bought']
-                : $swapData['sold'];
-
-            $token = Token::where('address', $swapData['baseToken'])
-                ->orWhere('mint', $tokenData['address'])
-                ->first();
-
-            if (!$token) {
-                $token = Token::firstOrCreate(
-                    ['address' => $swapData['baseToken']],
-                    [
-                        'chain_id' => $chainId,
-                        'name' => $tokenData['name'],
-                        'current_price' => $tokenData['usdPrice'],
-                        'logo' => $tokenData['logo'] ?? null,
-                        'symbol' => $tokenData['symbol'],
-                        'mint' => $tokenData['address'],
-                    ]
-                );
-            }
-
-            $tokenSwap = TokenSwap::updateOrCreate(
-                ['transaction_hash' => $swapData['transactionHash']],
-                [
-                    'chain_id' => $chainId,
-                    'token_id' => $token->id,
-                    'wallet_id' => $wallet->id,
-                    'transaction_hash' => $swapData['transactionHash'],
-                    'transaction_type' => $swapData['transactionType'],
-                    'transaction_index' => $swapData['transactionIndex'],
-                    'sub_category' => $swapData['subCategory'] ?? null,
-                    'block_timestamp' => $swapData['blockTimestamp'],
-                    'block_number' => $swapData['blockNumber'] ?: 0,
-                    'wallet_address' => $swapData['walletAddress'],
-                    'pair_address' => $swapData['pairAddress'],
-                    'pair_label' => $swapData['pairLabel'],
-                    'exchange_address' => $swapData['exchangeAddress'],
-                    'exchange_name' => $swapData['exchangeName'],
-                    'exchange_logo' => $swapData['exchangeLogo'] ?? null,
-                    'base_token' => $swapData['baseToken'],
-                    'quote_token' => $swapData['quoteToken'],
-                    'bought' => [
-                        'address' => $swapData['bought']['address'],
-                        'amount' => $swapData['bought']['amount'],
-                        'usdPrice' => $swapData['bought']['usdPrice'],
-                        'usdAmount' => $swapData['bought']['usdAmount'],
-                        'symbol' => $swapData['bought']['symbol'],
-                        'logo' => $swapData['bought']['logo'],
-                        'name' => $swapData['bought']['name'],
-                        'tokenType' => $swapData['bought']['tokenType'],
-                    ],
-                    'sold' => [
-                        'address' => $swapData['sold']['address'],
-                        'amount' => $swapData['sold']['amount'],
-                        'usdPrice' => $swapData['sold']['usdPrice'],
-                        'usdAmount' => $swapData['sold']['usdAmount'],
-                        'symbol' => $swapData['sold']['symbol'],
-                        'logo' => $swapData['sold']['logo'],
-                        'name' => $swapData['sold']['name'],
-                        'tokenType' => $swapData['sold']['tokenType'],
-                    ],
-                    'base_quote_price' => $swapData['baseQuotePrice'],
-                    'total_value_usd' => $swapData['totalValueUsd'],
-                ]
-            );
-
-            $createdSwaps[] = $tokenSwap;
-        }
-
-        return $createdSwaps;
-    }
-
 }
