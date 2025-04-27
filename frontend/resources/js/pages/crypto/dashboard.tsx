@@ -1,12 +1,13 @@
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import {  type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import DashboardOverview from '@/components/pulse/dashboard/overview';
 import TokenPieChart from '@/components/pulse/dashboard/tokenpiechart';
 import { SwapTable } from '@/components/pulse/dashboard/Tokenswaptable';
+import { User } from '@/lib/types/crypto/dashboard/user';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -15,8 +16,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Dashboard({ user }) {
+export default function Dashboard({ user }: {user: User}) {
+    console.log(user)
     const allTokenSwaps = user.wallets.reduce((accumulator, wallet) => {
+        //@ts-ignore
         return accumulator.concat(wallet.tokenswaps);
     }, []);
     return (

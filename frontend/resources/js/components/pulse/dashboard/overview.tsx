@@ -3,6 +3,20 @@ import {Progress} from "@/components/ui/progress"
 import { TrendingUpIcon, WalletIcon, ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+interface Wallet {
+    value: number;
+    snapshots: Array<{
+        created_at: string;
+        value: string;
+    }>;
+}
+
+interface OverviewProps {
+    data: {
+        wallets: Wallet[];
+    };
+}
+
 function summing (data: number[]) {
     let val = 0
     for (const item in data) {
@@ -11,21 +25,20 @@ function summing (data: number[]) {
     return val
 }
 
-
-export default function DashboardOverview ({data}) {
+export default function DashboardOverview ({data}: OverviewProps) {
     if (data.wallets.length === 0) {
         //TODO: placeholder
         return null
     }
     const sum = summing(data.wallets.flatMap(wallet => wallet.value)) || 0
-    let formattedBalance = `$ ${parseFloat(sum).toFixed(2)}` || 0
+    let formattedBalance = `$ ${Number(sum).toFixed(2)}` || 0
     useEffect(() => {
-        formattedBalance = `$ ${parseFloat(sum).toFixed(2)}` || 0
+        formattedBalance = `$ ${Number(sum).toFixed(2)}` || 0
     }, [sum]);
 
     const [hideBalance, setHideBalance] = useState(false)
-    const [dailyChange, setDailyChange] = useState(0);
-    const [monthlyChange, setMonthlyChange] = useState(0);
+    const [dailyChange, setDailyChange] = useState<number>(0);
+    const [monthlyChange, setMonthlyChange] = useState<number>(0);
     useEffect(() => {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
@@ -34,22 +47,30 @@ export default function DashboardOverview ({data}) {
         const oneMonthAgo = new Date();
         oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
         const monthAgoDate = oneMonthAgo.toISOString().split('T')[0];
-        const yesterdaySnapshot = data.wallets[0].snapshots.find(snapshot =>
-            snapshot.created_at.startsWith(yesterdayDate)
-        );
 
-        const monthAgoSnapshot = data.wallets[0].snapshots.find(snapshot =>
-            snapshot.created_at.startsWith(monthAgoDate)
-        );
-        if (yesterdaySnapshot) {
-             const yesterdayValue = parseFloat(yesterdaySnapshot.value);
-             setDailyChange((data.wallets[0].value / yesterdayValue) * 100 - 100)
-        }
-        if (monthAgoSnapshot) {
-             const monthAgoValue = parseFloat(monthAgoSnapshot.value);
-             setMonthlyChange( ( data.wallets[0].value / monthAgoValue) * 100 - 100)
+        const currentTotalValue = data.wallets.reduce((sum: number, wallet: Wallet) => sum + wallet.value, 0);
+
+        const yesterdayTotalValue = data.wallets.reduce((sum: number, wallet: Wallet) => {
+            const snapshot = wallet.snapshots.find(snapshot => 
+                snapshot.created_at.startsWith(yesterdayDate)
+            );
+            return sum + (snapshot ? parseFloat(snapshot.value) : 0);
+        }, 0);
+
+        const monthAgoTotalValue = data.wallets.reduce((sum: number, wallet: Wallet) => {
+            const snapshot = wallet.snapshots.find(snapshot => 
+                snapshot.created_at.startsWith(monthAgoDate)
+            );
+            return sum + (snapshot ? parseFloat(snapshot.value) : 0);
+        }, 0);
+
+        if (yesterdayTotalValue > 0) {
+            setDailyChange((currentTotalValue / yesterdayTotalValue) * 100 - 100);
         }
 
+        if (monthAgoTotalValue > 0) {
+            setMonthlyChange((currentTotalValue / monthAgoTotalValue) * 100 - 100);
+        }
     }, []);
 
     const userData = {
@@ -59,6 +80,7 @@ export default function DashboardOverview ({data}) {
         current_value: sum,
         goal: 100000
     }
+    
 
     const goalPercentage = Math.min((userData.current_value / userData.goal) * 100, 100)
     const formatCurrency = (amount: number) => {
