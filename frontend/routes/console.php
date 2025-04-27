@@ -2,12 +2,12 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
+use App\Jobs\RefreshAllWallets;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
 
 
 Schedule::call(function () {
-    \Log::info("Hello world"); // Logs to storage/logs/laravel.log
-})->everyMinute();
+    \Log::info("Dispatching wallet refresh job");
+    dispatch(new RefreshAllWallets);
+})->daily();

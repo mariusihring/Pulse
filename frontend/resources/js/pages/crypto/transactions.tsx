@@ -10,17 +10,21 @@ import { SwapTable } from '@/components/pulse/dashboard/Tokenswaptable';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
+        title: 'Crypto',
+        href: '/crypto',
+    },
+    {
+        title: 'Transactions',
+        href: '/crypto/transactions',
     },
 ];
 
-export default function Dashboard({ }) {
+export default function Dashboard({ user }) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div>Dashboard</div>
+            <div>Transactions</div>
         </AppLayout>
     );
 }

@@ -16,45 +16,12 @@ Route::middleware(['auth', 'verified'])->group(
         Route::get(
             'dashboard',
             function () {
-
-                $user = Auth::user()->load(
-                    [
-                    'wallets',
-                    'wallets.snapshots',
-                    'wallets.tokenswaps' => function ($query) {
-                        $query->orderBy('block_timestamp', 'desc');
-                    },
-                    'tokenHoldings',
-                    'tokenHoldings.token'
-                    ]
-                );
-                return Inertia::render('dashboard', compact('user'));
+                return Inertia::render('dashboard');
             }
         )->name('dashboard');
-
-        Route::post(
-            "test",
-            function (Request $request, \App\Services\WalletService $service) {
-                $user = Auth::user();
-                $address = $request->input('address');
-                $data = $service->loadPortfolio($user->id, $address, 'bbdebcf5-3439-4d9c-a9e6-8e54f1924456');
-
-                return response()->json($data);
-
-            }
-        )->name('test');
-
-        Route::post(
-            "refresh",
-            function (Request $request, \App\Services\WalletService $service) {
-                $user = Auth::user();
-                $address = $request->input("address");
-                $data = $service->refreshWallet($address);
-                return response()->json($data);
-            }
-        )->name("refresh");
     }
 );
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
+require __DIR__ . '/crypto.php';

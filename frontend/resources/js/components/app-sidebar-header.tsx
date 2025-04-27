@@ -78,48 +78,48 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <SidebarTrigger className="-ml-1" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
-            <div className="flex w-full justify-end space-x-4">
-                <Button onClick={handleRefresh}><RefreshCcw /></Button>
-                <Popover open={isOpen} onOpenChange={setIsOpen}>
-                    <PopoverTrigger asChild>
-                        <Button onClick={() => setIsOpen(true)}>+</Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80">
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                                    Wallet Address
-                                </label>
-                                <Input
-                                    id="address"
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    placeholder="Enter wallet address"
-                                    className="mt-1"
-                                    disabled={loading}
-                                />
-                            </div>
-                            <Button type="submit" disabled={loading}>
-                                {loading ? 'Loading...' : 'Submit'}
-                            </Button>
-                            {error && <p className="text-red-500 text-sm">{error}</p>}
-                            {responseData && (
-                                <div>
-                                    <label htmlFor="response" className="block text-sm font-medium text-gray-700">
-                                        Response Data
-                                    </label>
-                                    <Textarea
-                                        id="response"
-                                        value={responseData}
-                                        readOnly
-                                        className="mt-1 h-32"
-                                    />
-                                </div>
-                            )}
-                        </form>
-                    </PopoverContent>
-                </Popover>
-            </div>
+            {/*<div className="flex w-full justify-end space-x-4">*/}
+            {/*    <Button onClick={handleRefresh}><RefreshCcw /></Button>*/}
+            {/*    <Popover open={isOpen} onOpenChange={setIsOpen}>*/}
+            {/*        <PopoverTrigger asChild>*/}
+            {/*            <Button onClick={() => setIsOpen(true)}>+</Button>*/}
+            {/*        </PopoverTrigger>*/}
+            {/*        <PopoverContent className="w-80">*/}
+            {/*            <form onSubmit={handleSubmit} className="space-y-4">*/}
+            {/*                <div>*/}
+            {/*                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">*/}
+            {/*                        Wallet Address*/}
+            {/*                    </label>*/}
+            {/*                    <Input*/}
+            {/*                        id="address"*/}
+            {/*                        value={address}*/}
+            {/*                        onChange={(e) => setAddress(e.target.value)}*/}
+            {/*                        placeholder="Enter wallet address"*/}
+            {/*                        className="mt-1"*/}
+            {/*                        disabled={loading}*/}
+            {/*                    />*/}
+            {/*                </div>*/}
+            {/*                <Button type="submit" disabled={loading}>*/}
+            {/*                    {loading ? 'Loading...' : 'Submit'}*/}
+            {/*                </Button>*/}
+            {/*                {error && <p className="text-red-500 text-sm">{error}</p>}*/}
+            {/*                {responseData && (*/}
+            {/*                    <div>*/}
+            {/*                        <label htmlFor="response" className="block text-sm font-medium text-gray-700">*/}
+            {/*                            Response Data*/}
+            {/*                        </label>*/}
+            {/*                        <Textarea*/}
+            {/*                            id="response"*/}
+            {/*                            value={responseData}*/}
+            {/*                            readOnly*/}
+            {/*                            className="mt-1 h-32"*/}
+            {/*                        />*/}
+            {/*                    </div>*/}
+            {/*                )}*/}
+            {/*            </form>*/}
+            {/*        </PopoverContent>*/}
+            {/*    </Popover>*/}
+            {/*</div>*/}
         </header>
     );
 }
