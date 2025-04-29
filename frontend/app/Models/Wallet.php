@@ -52,6 +52,12 @@ class Wallet extends Model
     {
         return $this->belongsTo(Chain::class);
     }
+
+    public function tokenholdings(): HasMany
+    {
+        return $this->hasMany(TokenHoldings::class);
+    }
+
     public function refresh(): void
     {
         $client = app(Client::class);

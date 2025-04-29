@@ -17,7 +17,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard({ user }: {user: User}) {
-    console.log(user)
+    
     const allTokenSwaps = user.wallets.reduce((accumulator, wallet) => {
         //@ts-ignore
         return accumulator.concat(wallet.tokenswaps);

@@ -33,6 +33,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return Inertia::render('crypto/transactions', compact('user'));
         })->name('crypto.transactions');
 
+        Route::get('/wallets', function () {
+            $user = Auth::user()->load([
+                'wallets',
+                'wallets.chain',
+                'wallets.snapshots',
+                'wallets.tokenswaps' => function ($query) {
+                    $query->orderBy('block_timestamp', 'desc');
+                },
+                'wallets.tokenHoldings',
+                'wallets.tokenHoldings.token'
+            ]);
+            return Inertia::render('crypto/wallets', compact('user'));
+        })->name('crypto.wallets');
+
         Route::post('/test', function (Request $request, \App\Services\WalletService $service) {
             $user = Auth::user();
             $address = $request->input('address');
