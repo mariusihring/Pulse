@@ -7,7 +7,7 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::middleware(['auth', 'verified'])->get('/user/wallets', function () {
+Route::middleware( 'auth:sanctum')->get('/user/wallets', function () {
     $user = Auth::user()->load([
         'wallets',
         'wallets.chain',

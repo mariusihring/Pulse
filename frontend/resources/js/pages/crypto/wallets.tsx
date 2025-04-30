@@ -13,16 +13,20 @@ import WalletCardSkeleton from '@/components/pulse/crypo/wallet-card-skeleton';
 import { User, Wallet as WalletType } from '@/lib/types/crypto/dashboard/user';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from  "@/lib/apiClient"
-
+import axios from "axios"
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Crypto', href: '/crypto' },
     { title: 'Wallets', href: '/crypto/wallets' },
 ];
 
 export default function Dashboard({ user: initialUser }: { user: User }) {
+    console.log(initialUser)
     const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('all');
+
+
+
 
     const { data: user = initialUser, isLoading, isFetching, error } = useQuery<User>({
             queryKey: ['userWallets'],
@@ -39,6 +43,9 @@ export default function Dashboard({ user: initialUser }: { user: User }) {
     // Refresh data
     const refreshData = () => {
         queryClient.invalidateQueries({ queryKey: ['userWallets'] });
+
+
+//        router.reload({ only: ['user'] })
     };
 
     // Compute daily and monthly changes
@@ -104,7 +111,7 @@ export default function Dashboard({ user: initialUser }: { user: User }) {
                 <header className="flex flex-col gap-6 mb-8">
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-semibold tracking-tight">Crypto Wallets</h1>
-                        <Button size="sm" className="gap-1" disabled={isLoading || isFetching}>
+                        <Button size="sm" className="gap-1" disabled={isLoading || isFetching} >
                             <Plus className="w-4 h-4" />
                             Add Wallet
                         </Button>

@@ -19,8 +19,7 @@ const apiClient: AxiosInstance = axios.create({
     withCredentials: true,
     withXSRFToken: true,
     headers: {
-        Accept:  'application/json',
-        "X-Requested-With": "XMLHttpRequest",
+        Accept: "application/json", Referer: "http://localhost:8000", WithCredentials: true,  "X-Requested-With":  "XMLHttpRequest"
     }
 });
 
