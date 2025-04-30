@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from "@/lib/utils"
 import { Wallet } from '@/lib/types/crypto/dashboard/user';
 import Solana from "@/components/icons/solana"
-
+import {toast} from "sonner"
 
 
 export function WalletCard({ wallet }: {wallet: Wallet}) {
@@ -47,6 +47,26 @@ export function WalletCard({ wallet }: {wallet: Wallet}) {
     setIsFavorite(!isFavorite)
   }
 
+    const copyAddress = async (text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            toast.success("Copied!")
+        } catch (err) {
+
+            try {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                toast.success("Copied!")
+            } catch (fallbackErr) {
+                toast.error('Failed to copy');
+
+            }
+        }
+    }
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
       <CardHeader className="flex flex-row items-center justify-between p-4 space-y-0 border-b">
@@ -83,13 +103,15 @@ export function WalletCard({ wallet }: {wallet: Wallet}) {
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => copyAddress(wallet.address)}>
                 <Copy className="w-4 h-4 mr-2" />
                 Copy Address
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <ExternalLink className="w-4 h-4 mr-2" />
+              <DropdownMenuItem >
+                  <a href={ `https://solscan.io/account/${wallet.address} `} target="_blank" className="flex justify-between w-full">
+                <ExternalLink className="w-4 h-4 mr-4" />
                 View on Explorer
+                  </a>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

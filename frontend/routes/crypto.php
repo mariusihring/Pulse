@@ -34,17 +34,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->name('crypto.transactions');
 
         Route::get('/wallets', function () {
-            $user = Auth::user()->load([
-                'wallets',
-                'wallets.chain',
-                'wallets.snapshots',
-                'wallets.tokenswaps' => function ($query) {
-                    $query->orderBy('block_timestamp', 'desc');
-                },
-                'wallets.tokenHoldings',
-                'wallets.tokenHoldings.token'
-            ]);
-            return Inertia::render('crypto/wallets', compact('user'));
+            return Inertia::render('crypto/wallets',[ 'user' => Inertia::defer(function() {
+                return Auth::user()->load([
+                    'wallets',
+                    'wallets.chain',
+                    'wallets.snapshots',
+                    'wallets.tokenswaps' => function ($query) {
+                        $query->orderBy('block_timestamp', 'desc');
+                    },
+                    'wallets.tokenHoldings',
+                    'wallets.tokenHoldings.token'
+                ]);
+            })]);
         })->name('crypto.wallets');
 
         Route::post('/test', function (Request $request, \App\Services\WalletService $service) {
