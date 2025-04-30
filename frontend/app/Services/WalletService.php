@@ -10,6 +10,7 @@ use App\Models\WalletSnapshot;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\Uid\Uuid;
 
 // Maybe check here for more good apis
 // https://github.com/public-apis/public-apis?tab=readme-ov-file#cryptocurrency
@@ -29,7 +30,7 @@ class WalletService
         $wallet = $this->createOrUpdateWallet($userId, $walletAddress, $chainId, $portfolioData);
         
         $mintPrices = $this->fetchTokenPrices($portfolioData['tokens']);
-        $walletValue = $this->processTokens($portfolioData['tokens'], $mintPrices, $wallet, $userId);
+        $walletValue = $this->processTokens($portfolioData['tokens'], $mintPrices, $wallet, $userId, $chainId);
         
         $this->updateWalletValue($wallet, $walletValue);
         $this->createWalletSnapshot($wallet, $walletValue);
@@ -69,12 +70,12 @@ class WalletService
         return array_column($prices, null, 'tokenAddress');
     }
 
-    private function processTokens(array $tokens, array $mintPrices, Wallet $wallet, string $userId): float
+    private function processTokens(array $tokens, array $mintPrices, Wallet $wallet, string $userId, string $chainId): float
     {
         $walletValue = 0;
 
         foreach ($tokens as $token) {
-            $tokenModel = $this->createOrUpdateToken($token, $mintPrices[$token['mint']]);
+            $tokenModel = $this->createOrUpdateToken($token, $mintPrices[$token['mint']], $chainId);
             $tokenValue = $this->createTokenHolding($token, $tokenModel, $wallet, $userId);
             $walletValue += $tokenValue;
         }
@@ -82,19 +83,33 @@ class WalletService
         return $walletValue;
     }
 
-    private function createOrUpdateToken(array $tokenData, array $priceData): Token
+    private function createOrUpdateToken(array $tokenData, array $priceData, string $chainId): Token
     {
-        return Token::updateOrCreate(
-            ['mint' => $tokenData['mint']],
-            [
-                'name' => $tokenData['name'],
-                'chain_id' => $tokenData['chain_id'] ?? null,
-                'current_price' => $priceData['usdPrice'],
-                'address' => $tokenData['associatedTokenAddress'],
-                'symbol' => $tokenData['symbol'],
-                'logo' => $tokenData['logo'] ?? null,
-            ]
-        );
+        try {
+            $token = Token::where('mint', $tokenData['associatedTokenAddress'])->first();
+
+            if ($token) {
+                $token->current_price = $priceData['usdPrice'];
+                $token->save();
+
+                return $token->id;
+            } else {
+                $token = Token::create([
+                    'name' => $tokenData['name'],
+                    'chain_id' => $chainId,
+                    'current_price' => $priceData['usdPrice'],
+                    'address' => $tokenData['associatedTokenAddress'],
+                    'symbol' => $tokenData['symbol'],
+                    'logo' => $tokenData['logo'] ?? null,
+                    'mint' => $tokenData['associatedTokenAddress'],
+                ]);
+
+                return $token;
+            }
+        } catch (\Exception $e) {
+            \Log::error("Error creating or updating token: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     private function createTokenHolding(array $token, Token $tokenModel, Wallet $wallet, string $userId): float

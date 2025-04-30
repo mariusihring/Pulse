@@ -14,7 +14,7 @@ class DevSetupSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run(WalletService $service): void
     {
         $user = new User;
         $user->name = "Riri";
@@ -29,7 +29,6 @@ class DevSetupSeeder extends Seeder
 
 
         //user wallet chain
-        $service = new WalletService;
         $data1 = $service->loadPortfolio($user->id, "8K2MYNbuN7LvSM5132gAQXnth7oyeYLmkXcCcBm68Fbm", $chain->id);
         $data1 = $service->loadPortfolio($user->id, "AghsmY94TE5NdCqk7FZKPW78gzQ4PpEmnKVFRao5yj9o", $chain->id);
         $data2 = $service->loadPortfolio($user->id, "4g7SgYkTTnxhq1tPE1A4kR2UkUZGYLqKt7B12SKomxw3", $chain->id);
