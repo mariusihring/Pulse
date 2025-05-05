@@ -14,6 +14,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post("/user/wallets/refresh", [CryptoController::class, 'updatePortfolio'])->name('crypto.user.wallets.updatePortfolio');
         Route::post("/user/wallet/refresh", [\App\Http\Controllers\WalletController::class, 'refreshSingleWallet'])->name('crypto.user.wallets.refresh.single.wallet');
         Route::patch("/user/wallets/{wallet}", [\App\Http\Controllers\WalletController::class,  'update'])->name( 'crypto.user.wallet.update');
-
+        Route::get( "/chains", [\App\Http\Controllers\ChainController::class,  'index'])->name("crypto.chains.all");
     });
 });
