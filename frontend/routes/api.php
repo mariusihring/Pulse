@@ -20,4 +20,10 @@ Route::middleware( 'auth:sanctum')->get('/user/wallets', function () {
     ]);
     return response()->json($user);
 });
+Route::middleware( 'auth:sanctum')->post('/user/wallet/refresh', function (Request $request, \App\Services\WalletService $service) {
+        $user = Auth::user();
+        $address = $request->input('address');
+        $data = $service->refreshWallet($address);
+        return response()->json($data);
+});
 

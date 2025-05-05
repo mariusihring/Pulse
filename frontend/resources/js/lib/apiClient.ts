@@ -15,17 +15,17 @@ async function ensureCsrfCookie() {
 }
 
 const apiClient: AxiosInstance = axios.create({
-    baseURL: '/api',
+
     withCredentials: true,
     withXSRFToken: true,
     headers: {
-        Accept: "application/json", Referer: "http://localhost:8000", WithCredentials: true,  "X-Requested-With":  "XMLHttpRequest"
+        Accept: "application/json",  WithCredentials: true,  "X-Requested-With":  "XMLHttpRequest"
     }
 });
 
-apiClient.interceptors.request.use(async (config: AxiosRequestConfig) => {
-    await ensureCsrfCookie();
-    return config;
-  });
+//apiClient.interceptors.request.use(async (config: AxiosRequestConfig) => {
+//    await ensureCsrfCookie();
+//    return config;
+//  });
 
   export default apiClient;

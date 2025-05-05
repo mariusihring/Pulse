@@ -5,6 +5,7 @@ import ReactDOMServer from 'react-dom/server';
 import { type RouteName, route } from 'ziggy-js';
 import {Toaster} from  "@/components/ui/sonner"
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -37,6 +38,7 @@ createServer((page) =>
             <QueryClientProvider client={queryClient}>
             <App {...props} />
             <Toaster richColors/>
+            <ReactQueryDevtools initialIsOpen={false} />
             </QueryClientProvider>
         },
     }),

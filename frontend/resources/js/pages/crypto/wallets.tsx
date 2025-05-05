@@ -1,7 +1,8 @@
+
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowDownIcon, ArrowUpIcon, Coins, Plus, RefreshCw, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,41 +12,47 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WalletCard } from '@/components/pulse/crypo/wallet-card';
 import WalletCardSkeleton from '@/components/pulse/crypo/wallet-card-skeleton';
 import { User, Wallet as WalletType } from '@/lib/types/crypto/dashboard/user';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import apiClient from  "@/lib/apiClient"
-import axios from "axios"
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import apiClient from '@/lib/apiClient';
+import { toast } from 'sonner';
+
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Crypto', href: '/crypto' },
     { title: 'Wallets', href: '/crypto/wallets' },
 ];
 
 export default function Dashboard({ user: initialUser }: { user: User }) {
-    console.log(initialUser)
     const queryClient = useQueryClient();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('all');
 
-
-
-
     const { data: user = initialUser, isLoading, isFetching, error } = useQuery<User>({
-            queryKey: ['userWallets'],
-            queryFn: async () => {
-                const { data } = await apiClient.get<User>('/user/wallets');
-                return data;
-            },
+        queryKey: ['userWallets'],
+        queryFn: async () => {
+            const { data } = await apiClient.get('/crypto/user/wallets/all');
+            return data.user;
+        },
+        initialData: initialUser,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    });
 
-                initialData: initialUser,
-                    staleTime: 1000 * 60 * 5, // 5 minutes
+    // Mutation for updating wallet
+    const updateWalletMutation = useMutation({
+        mutationFn: async ({ walletId, updates }: { walletId: string; updates: Partial<WalletType> }) => {
+            const { data } = await apiClient.patch(`/crypto/user/wallets/${walletId}`, updates);
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['userWallets'] });
+            toast.success('Wallet updated successfully!');
+        },
+        onError: (error: any) => {
+            toast.error(`Failed to update wallet: ${error.message}`);
+        },
+    });
 
-            });
-
-    // Refresh data
     const refreshData = () => {
         queryClient.invalidateQueries({ queryKey: ['userWallets'] });
-
-
-//        router.reload({ only: ['user'] })
     };
 
     // Compute daily and monthly changes
@@ -85,25 +92,30 @@ export default function Dashboard({ user: initialUser }: { user: User }) {
         }
     }, [user]);
 
-    const totalValue = user.wallets.reduce((sum, wallet) => sum + wallet.value, 0);
-    const totalTokens = user.wallets.reduce((sum, wallet) => sum + wallet.token_holdings.length, 0);
 
-    const filteredWallets = user.wallets.filter((wallet) => {
-        if (
-            searchQuery &&
-            !wallet.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-            !wallet.address.toLowerCase().includes(searchQuery.toLowerCase())
-        ) {
-            return false;
-        }
+    const { totalValue, totalTokens, filteredWallets } = useMemo(() => {
 
-        if (activeTab === 'favorites' && !wallet.favorite) {
-            return false;
-        }
+        const totalValue = user.wallets.reduce((sum, wallet) => sum + wallet.value, 0);
+        const totalTokens = user.wallets.reduce((sum, wallet) => sum + wallet.token_holdings.length, 0);
 
-        return true;
-    });
+        const filteredWallets = user.wallets.filter((wallet) => {
+            if (
+                searchQuery &&
+                !wallet.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+                !wallet.address.toLowerCase().includes(searchQuery.toLowerCase())
+            ) {
+                return false;
+            }
 
+            if (activeTab === 'favorites' && !wallet.favorite) {
+                return false;
+            }
+
+            return true;
+        });
+
+        return { totalValue, totalTokens, filteredWallets };
+    }, [user, searchQuery, activeTab]);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Wallets" />
@@ -111,14 +123,13 @@ export default function Dashboard({ user: initialUser }: { user: User }) {
                 <header className="flex flex-col gap-6 mb-8">
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-semibold tracking-tight">Crypto Wallets</h1>
-                        <Button size="sm" className="gap-1" disabled={isLoading || isFetching} >
+                        <Button size="sm" className="gap-1" disabled={isLoading || isFetching}>
                             <Plus className="w-4 h-4" />
                             Add Wallet
                         </Button>
                     </div>
 
                     <div className="grid gap-6 md:grid-cols-3">
-
                         {isLoading || isFetching ? (
                             <>
                                 <Card>
@@ -262,7 +273,11 @@ export default function Dashboard({ user: initialUser }: { user: User }) {
                             ))
                         ) : (
                             filteredWallets.map((wallet) => (
-                                <WalletCard key={wallet.id} wallet={wallet} />
+                                <WalletCard
+                                    key={wallet.id}
+                                    wallet={wallet}
+                                    onUpdate={(updates) => updateWalletMutation.mutate({ walletId: wallet.id, updates })}
+                                />
                             ))
                         )}
                     </div>

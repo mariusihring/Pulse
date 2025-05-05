@@ -44,20 +44,22 @@ class WalletService
         return json_decode($response->getBody(), true);
     }
 
-    private function createOrUpdateWallet(string $userId, string $walletAddress, string $chainId, array $portfolioData): Wallet
-    {
-        return Wallet::updateOrCreate(
-            ['address' => $walletAddress],
-            [
-                'name' => 'My New Wallet',
-                'chain_token_amount' => $portfolioData['nativeBalance']['solana'],
-                'value' => 0,
-                'chain_id' => $chainId,
-                'user_id' => $userId,
-                'favorite' => false,
-            ]
-        );
-    }
+private function createOrUpdateWallet(string $userId, string $walletAddress, string $chainId, array $portfolioData): Wallet
+{
+    return Wallet::updateOrCreate(
+        ['address' => $walletAddress],
+        [
+            'chain_token_amount' => $portfolioData['nativeBalance']['solana'],
+            'value' => 0,
+            'chain_id' => $chainId,
+            'user_id' => $userId,
+        ],
+        [
+            'name' => 'My New Wallet',
+            'favorite' => false,
+        ]
+    );
+}
 
     private function fetchTokenPrices(array $tokens): array
     {
@@ -92,7 +94,7 @@ class WalletService
                 $token->current_price = $priceData['usdPrice'];
                 $token->save();
 
-                return $token->id;
+                return $token;
             } else {
                 $token = Token::create([
                     'name' => $tokenData['name'],

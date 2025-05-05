@@ -1,79 +1,19 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\CryptoController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('crypto')->group(function () {
-        Route::get('/dashboard', function () {
-            $user = Auth::user()->load([
-                'wallets',
-                'wallets.snapshots',
-                'wallets.tokenswaps' => function ($query) {
-                    $query->orderBy('block_timestamp', 'desc');
-                },
-                'tokenHoldings',
-                'tokenHoldings.token'
-            ]);
-            return Inertia::render('crypto/dashboard', compact('user'));
-        })->name('cryptodashboard');
+        Route::get('/dashboard', [CryptoController::class, 'dashboard'])->name('cryptodashboard');
+        Route::get('/transactions', [CryptoController::class, 'transactions'])->name('crypto.transactions');
+        Route::get('/wallets', [CryptoController::class, 'wallets'])->name('crypto.wallets');
+        Route::post('/test', [CryptoController::class, 'test'])->name('crypto.test');
+        Route::get('/user/wallets/all', [CryptoController::class, 'userWallets'])->name('crypto.user.wallet.reload');
+        Route::post("/user/wallets/refresh", [CryptoController::class, 'updatePortfolio'])->name('crypto.user.wallets.updatePortfolio');
+        Route::post("/user/wallet/refresh", [\App\Http\Controllers\WalletController::class, 'refreshSingleWallet'])->name('crypto.user.wallets.refresh.single.wallet');
+        Route::patch("/user/wallets/{wallet}", [\App\Http\Controllers\WalletController::class,  'update'])->name( 'crypto.user.wallet.update');
 
-        Route::get('/transactions', function () {
-            $user = Auth::user()->load([
-                'wallets',
-                'wallets.snapshots',
-                'wallets.tokenswaps' => function ($query) {
-                    $query->orderBy('block_timestamp', 'desc');
-                },
-                'tokenHoldings',
-                'tokenHoldings.token'
-            ]);
-            return Inertia::render('crypto/transactions', compact('user'));
-        })->name('crypto.transactions');
-
-        Route::get('/wallets', function () {
-            $user = Auth::user()->load([
-                'wallets',
-                'wallets.chain',
-                'wallets.snapshots',
-                'wallets.tokenswaps' => function ($query) {
-                    $query->orderBy('block_timestamp', 'desc');
-                },
-                'wallets.tokenHoldings',
-                'wallets.tokenHoldings.token'
-            ]);
-            return Inertia::render('crypto/wallets', compact('user'));
-        })->name('crypto.wallets');
-
-        Route::post('/test', function (Request $request, \App\Services\WalletService $service) {
-            $user = Auth::user();
-            $address = $request->input('address');
-            $data = $service->loadPortfolio($user->id, $address, 'bbdebcf5-3439-4d9c-a9e6-8e54f1924456');
-            return response()->json($data);
-        })->name('crypto.test');
-
-        Route::post('/refresh', function (Request $request, \App\Services\WalletService $service) {
-            $user = Auth::user();
-            $address = $request->input('address');
-            $data = $service->refreshWallet($address);
-            return response()->json($data);
-        })->name('crypto.refresh');
-
-        Route::get("/user/wallets", function (Request $request) {
-            $user = Auth::user()->load([
-                 'tokens',
-                'wallets',
-                'wallets.chain',
-                'wallets.snapshots',
-                'wallets.tokenswaps' => function ($query) {
-                $query->orderBy('block_timestamp', 'desc');
-                },
-                'wallets.tokenHoldings',
-                'wallets.tokenHoldings.token'
-            ]);
-            return compact($user);
-        })->name("crypto.user.wallet.reload");
     });
-}); 
+});

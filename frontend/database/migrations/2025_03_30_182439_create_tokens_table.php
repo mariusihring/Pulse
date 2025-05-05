@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('current_price', total:12,places: 6);
             $table->string('logo')->nullable();
             $table->string('symbol');
-            $table->string('address')->unique();
+            $table->string('address');
             $table->string('mint')->unique();
             $table->timestamps();
         });
