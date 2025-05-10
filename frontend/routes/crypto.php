@@ -8,6 +8,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('crypto')->group(function () {
         Route::get('/dashboard', [CryptoController::class, 'dashboard'])->name('cryptodashboard');
         Route::get('/transactions', [CryptoController::class, 'transactions'])->name('crypto.transactions');
+        Route::get( "/tokens", [CryptoController::class,  'tokens'])->name("crypto.tokens");
         Route::get('/wallets', [CryptoController::class, 'wallets'])->name('crypto.wallets');
         Route::post('/test', [CryptoController::class, 'test'])->name('crypto.test');
         Route::get('/user/wallets/all', [CryptoController::class, 'userWallets'])->name('crypto.user.wallet.reload');
