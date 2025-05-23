@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Concerns\HasVersion4Uuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use function GuzzleHttp\json_encode;
+
 class Token extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory;
+    use HasUuids;
 
     /**
      * The attributes that are mass assignable.
@@ -57,7 +60,7 @@ class Token extends Model
                 'sold' => $tokenswap->sold
             ]);
 
-            if ($tokenswap->transaction_type === 'Buy') {
+            if ($tokenswap->transaction_type === 'buy') {
                 $totalBought += $tokenswap->bought['usdAmount'];
                 $totalBoughtAmount += $tokenswap->bought['amount'];
             } else {
@@ -73,38 +76,38 @@ class Token extends Model
             'totalSoldAmount' => $totalSoldAmount
         ]);
 
-        // Initialize PnL values
         $realizedPnL = 0;
         $unrealizedPnL = 0;
-        
-        // Only calculate if we have bought tokens
+
         if ($totalBoughtAmount > 0) {
             $averageBuyPrice = $totalBought / $totalBoughtAmount;
-            
-            // Calculate realized PnL from completed trades
+
             if ($totalSoldAmount > 0) {
                 $realizedPnL = $totalSold - ($totalSoldAmount * $averageBuyPrice);
             }
-            
-            // Calculate unrealized PnL from remaining tokens
+
             $remainingAmount = $totalBoughtAmount - $totalSoldAmount;
             if ($remainingAmount > 0) {
                 $unrealizedPnL = ($this->current_price - $averageBuyPrice) * $remainingAmount;
             }
         }
-        
-        // Total PnL is sum of realized and unrealized
+
         $totalPnL = $realizedPnL + $unrealizedPnL;
-        
-        \Log::info('Final calculation:', [
+
+        return
+            [
+            'totalBoughtUsd' => $totalBought,
+            'totalSoldUsd' => $totalSold,
+            'totalTokenAmountBought' => $totalBoughtAmount,
+            'totalTokenAmountSold' => $totalSoldAmount,
             'realizedPnL' => $realizedPnL,
             'unrealizedPnL' => $unrealizedPnL,
             'totalPnL' => $totalPnL,
             'averageBuyPrice' => $totalBoughtAmount > 0 ? $totalBought / $totalBoughtAmount : 0,
             'remainingAmount' => $totalBoughtAmount - $totalSoldAmount
-        ]);
+            ]
+        ;
 
-        return $totalPnL;
     }
-    
+
 }
